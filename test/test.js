@@ -1,28 +1,32 @@
-const { describe, it } = require("mocha");
+const { describe, it, before } = require("mocha");
 const request = require("supertest");
 const app = require("../app");
 const expect = require("chai").expect;
 
 describe("authentification routes", () => {
-    describe("Signup route", () => {
-        // it("should return status 201 with message", (done) => {
-        //     request(app)
-        //         .post("/api/auth/signup/")
-        //         .send({ "email": "test.test@test.com", "password": "tester", "username": "tester" })
-        //         .expect("Content-Type", /json/)
-        //         .expect((res) => {
-        //             res.body.message = "Votre compte a bien été créer.";
-        //         })
-        //         .expect(201, {
-        //             "message": "Votre compte a bien été créer."
-        //         })
-        //         .end((err) => {
-        //             if (err) {
-        //                 return done(err);
-        //             }
-        //             done();
-        //         });
-        // });
+    let token;
+    let id;
+
+    describe("POST /signup", () => {
+        console.log("POST CREATE USER");
+        it("should return status 201 with message", (done) => {
+            request(app)
+                .post("/api/auth/signup/")
+                .send({ "email": "test.test@test.com", "password": "tester", "username": "tester" })
+                .expect("Content-Type", /json/)
+                .expect((res) => {
+                    res.body.message = "Votre compte a bien été créer.";
+                })
+                .expect(201, {
+                    "message": "Votre compte a bien été créer."
+                })
+                .end((err) => {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
 
         it("should return status 422 with email error message", (done) => {
             request(app)
@@ -64,8 +68,11 @@ describe("authentification routes", () => {
                 .expect(422)
                 .then((res) => {
                     expect(res.body.errors).to.have.lengthOf(1);
+                    done();
+                })
+                .catch((err) => {
+                    return done(err);
                 });
-            done();
 
         });
 
@@ -77,9 +84,11 @@ describe("authentification routes", () => {
                 .expect(422)
                 .then((res) => {
                     expect(res.body.errors).to.have.lengthOf(2);
-
+                    done();
+                })
+                .catch((err) => {
+                    return done(err);
                 });
-            done();
         });
 
         it("should return status 422 with username invalid error message", (done) => {
@@ -129,11 +138,12 @@ describe("authentification routes", () => {
         });
     });
 
-    describe("Login Route", () => {
+    describe("POST /login", () => {
+        console.log("POST CONNECT USER");
         it("should connect the user", (done) => {
             request(app)
                 .post("/api/auth/login")
-                .send({ "username": "testerlogin", "password": "123456" })
+                .send({ "username": "tester", "password": "tester" })
                 .expect("Content-Type", /json/)
                 .expect(200)
                 .then((res) => {
@@ -142,6 +152,96 @@ describe("authentification routes", () => {
                     expect(res.body.token).to.be.a("string");
                     expect(res.body.userID).to.be.a("string");
                     expect(res.body.message).to.be.a("string");
+                    token = res.body.token;
+                    id = res.body.userID;
+                    done();
+                })
+                .catch((err) => {
+                    return done(err);
+                });
+        });
+
+        it("should return error message", (done) => {
+            request(app)
+                .post("/api/auth/login")
+                .send({ "username": "badUsername", "password": "badPassword" })
+                .expect("Content-Type", /json/)
+                .expect(401)
+                .then((res) => {
+                    expect(res.body.message).to.be.a("string");
+                    done();
+                })
+                .catch((err) => {
+                    return done(err);
+                });
+        });
+
+        it("should return error invalid username message", (done) => {
+            request(app)
+                .post("/api/auth/login")
+                .send({ "username": "", "password": "badPassword" })
+                .expect("Content-Type", /json/)
+                .expect(422)
+                .then((res) => {
+                    expect(res.body.errors).to.have.lengthOf(1);
+                    done();
+                })
+                .catch((err) => {
+                    return done(err);
+                });
+        });
+
+        it("should return error invalid password message", (done) => {
+            request(app)
+                .post("/api/auth/login")
+                .send({ "username": "badUsername", "password": "" })
+                .expect("Content-Type", /json/)
+                .expect(422)
+                .then((res) => {
+                    expect(res.body.errors).to.have.lengthOf(1);
+                    expect(res.body.errors[0].msg).to.be.a("string");
+                    done();
+                })
+                .catch((err) => {
+                    return done(err);
+                });
+        });
+    });
+
+    describe("GET /user/:id", () => {
+        console.log("GEt USER INFO");
+        it("should give user datas", (done) => {
+            request(app)
+                .get(`/api/auth/user/${id}`)
+                .set("Authorization", `Bearer ${token}`)
+                .expect(200)
+                .then((res) => {
+                    expect(res.body.userID).to.be.a("string");
+                    expect(res.body.email).to.be.a("string");
+                    expect(res.body.username).to.be.a("string");
+                    done();
+                })
+                .catch((err) => {
+                    return done(err);
+                });
+        });
+    });
+
+    describe("POST /delete", () => {
+        console.log("POST DELETE USER");
+        it("should delete the user", (done) => {
+
+            request(app)
+                .post("/api/auth/delete/")
+                .set("Authorization", `Bearer ${token}`)
+                .send({ "userID": id })
+                .expect(200, {
+                    "message": "Votre compte a bien été supprimé"
+                })
+                .end((err) => {
+                    if (err) {
+                        return done(err);
+                    }
                     done();
                 });
         });
