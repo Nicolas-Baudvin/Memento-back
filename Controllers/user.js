@@ -85,3 +85,27 @@ exports.login = async (req, res) => {
     }
 
 };
+
+exports.delete = (req, res) => {
+    User.deleteOne({ "_id": req.body.userID })
+        .then(() => {
+            res.status(200).json({ "message": "Votre compte a bien été supprimé" });
+        })
+        .catch((err) => {
+            console.log(err);
+            res.status(500).json({ err, "msg": "Une erreur sur le serveur est survenue, réessayez ou contacter l'administrateur" });
+        });
+
+};
+
+exports.getinfo = async(req, res) => {
+    const { id } = req.params;
+    const user = await User.findOne({ "_id": id });
+
+    if (!user) {
+        return res.status(401).json({ "message": "Vous n'êtes pas connecté" });
+    }
+
+    res.status(200).json({ "userID": user._id, "username": user.username, "email": user.email });
+
+};

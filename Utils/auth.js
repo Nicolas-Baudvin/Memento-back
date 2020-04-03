@@ -11,3 +11,8 @@ exports.login = [
     check("username").notEmpty().withMessage("Le champs pseudo est obligatoire"),
     check("password").isLength(6).withMessage("Le mot de passe doit comporter 6 caractères minimum")
 ];
+
+exports.delete = [
+    check("userID").notEmpty().withMessage("Vous n'êtes pas connecté"),
+    check("username").notEmpty().withMessage("Vous n'êtes pas connecté")
+];
