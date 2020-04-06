@@ -93,7 +93,7 @@ exports.delete = (req, res) => {
         })
         .catch((err) => {
             console.log(err);
-            res.status(500).json({ err, "msg": "Une erreur sur le serveur est survenue, réessayez ou contacter l'administrateur" });
+            res.status(400).json({ "error": "Une erreur sur le serveur est survenue, réessayez ou contacter l'administrateur" });
         });
 
 };
@@ -103,7 +103,7 @@ exports.getinfo = async(req, res) => {
     const user = await User.findOne({ "_id": id });
 
     if (!user) {
-        return res.status(401).json({ "message": "Vous n'êtes pas connecté" });
+        return res.status(401).json({ "error": "Vous n'êtes pas autorisés à utiliser cette fonctionnalité" });
     }
 
     res.status(200).json({ "userID": user._id, "username": user.username, "email": user.email });
