@@ -137,7 +137,7 @@
         "quote-props": [2, "always"],
         "quotes": [2, "double", "avoid-escape"],
         "semi": [2, "always"],
-        "space-before-function-paren": [2, "never"],
+        "space-before-function-paren": [0, "never"],
         "space-before-keywords": "off",
         "space-infix-ops": 2,
         "space-return-throw-case": "off",
