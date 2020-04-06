@@ -5,7 +5,13 @@ const mongoose = require("mongoose");
 const helmet = require("helmet");
 const path = require("path");
 
+/**
+ * Routers
+ */
 const authRoute = require("./Routers/auth.routes");
+const listRoute = require("./Routers/list.routes");
+const taskRoute = require("./Routers/task.routes");
+const tabRoute = require("./Routers/tab.routes");
 
 const app = express();
 
@@ -30,6 +36,24 @@ app.use(helmet());
 
 app.use(bodyParser.json());
 
+/**
+ * Authentification Routes
+ */
 app.use("/api/auth", authRoute);
+
+/**
+ * Lists Routes
+ */
+app.use("/api/list", listRoute);
+
+/**
+ * Tasks Routes
+ */
+app.use("/api/task", taskRoute);
+
+/**
+ * Tab Routes
+ */
+app.use("/api/tab", tabRoute);
 
 module.exports = app;
