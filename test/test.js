@@ -7,8 +7,10 @@ describe("authentification routes", () => {
     let token;
     let id;
 
+    /**
+     * Tests for POST /signup Route
+     */
     describe("POST /signup", () => {
-        console.log("POST CREATE USER");
         it("should return status 201 with message", (done) => {
             request(app)
                 .post("/api/auth/signup/")
@@ -138,8 +140,10 @@ describe("authentification routes", () => {
         });
     });
 
+    /**
+     * Tests for POST /login Route
+     */
     describe("POST /login", () => {
-        console.log("POST CONNECT USER");
         it("should connect the user", (done) => {
             request(app)
                 .post("/api/auth/login")
@@ -208,8 +212,10 @@ describe("authentification routes", () => {
         });
     });
 
+    /**
+     * Tests for GET /user/:id Route
+     */
     describe("GET /user/:id", () => {
-        console.log("GEt USER INFO");
         it("should give user datas", (done) => {
             request(app)
                 .get(`/api/auth/user/${id}`)
@@ -225,12 +231,40 @@ describe("authentification routes", () => {
                     return done(err);
                 });
         });
+
+        it("should return invalid id error message", (done) => {
+            request(app)
+                .get("/api/auth/user/5e85c31988187b1e23f31470")
+                .set("Authorization", `Bearer ${token}`)
+                .expect(401)
+                .then((res) => {
+                    expect(res.body.error).to.be.a("string");
+                    done();
+                })
+                .catch((err) => {
+                    done(err);
+                });
+        });
+
+        it("should return invalid userID message (false token)", (done) => {
+            request(app)
+                .get(`/api/auth/user/${id}`)
+                .expect(401)
+                .then((res) => {
+                    expect(res.body.error).to.be.a("string");
+                    done();
+                })
+                .catch((err) => {
+                    done(err);
+                });
+        });
     });
 
+    /**
+     * Tests for POST /delete Route
+     */
     describe("POST /delete", () => {
-        console.log("POST DELETE USER");
         it("should delete the user", (done) => {
-
             request(app)
                 .post("/api/auth/delete/")
                 .set("Authorization", `Bearer ${token}`)
@@ -245,5 +279,36 @@ describe("authentification routes", () => {
                     done();
                 });
         });
+
+        it("should throw invalid user id error (bad token)", (done) => {
+            request(app)
+                .post("/api/auth/delete/")
+                .send({ "userID": id })
+                .expect(401, {
+                    "error": "Vous n'avez pas le droit d'accéder à cette url."
+                })
+                .end((err) => {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+
+        it("should throw invalid user id error", (done) => {
+            request(app)
+                .post("/api/auth/delete/")
+                .set("Authorization", `Bearer ${token}`)
+                .send({ "userID": "5e85c31988187b1e23f31470" }) // id bidon
+                .expect(401)
+                .then((res) => {
+                    expect(res.body.error).to.be.a("string");
+                    done();
+                })
+                .catch((err) => {
+                    done(err);
+                });
+        });
+
     });
 });
