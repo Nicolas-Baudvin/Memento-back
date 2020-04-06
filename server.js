@@ -49,3 +49,19 @@ server.on("listening", () => {
 });
 
 server.listen(port);
+
+/**
+ * Socket
+ */
+
+const io = require("socket.io")(server);
+const SocketAuthCtrl = require("./Controllers/SocketControllers/auth");
+
+io.on("connection", (socket) => {
+    console.log("un utilisateur s'est connecté au réseau");
+
+    /**
+     * Vérification de l'identité de l'utilisateur entrant
+     */
+    socket.on("identify", (token) => SocketAuthCtrl.identify(token, socket));
+});
