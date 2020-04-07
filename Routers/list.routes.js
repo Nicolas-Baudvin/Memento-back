@@ -1,11 +1,13 @@
 const express = require("express");
 const listCtrl = require("../Controllers/list");
+const authMw = require("../Middlewares/auth");
+const checker = require("../Utils/tab");
 
 const router = express.Router();
 
-router.get("/:id", listCtrl.find);
-router.post("/create/", listCtrl.create);
-router.post("/update", listCtrl.update);
-router.post("/delete/", listCtrl.delete);
+router.get("/:id", [authMw, checker.find], listCtrl.find);
+router.post("/create/", [authMw, checker.create], listCtrl.create);
+router.post("/update", [authMw, checker.update], listCtrl.update);
+router.post("/delete/", [authMw, checker.delete], listCtrl.delete);
 
 module.exports = router;
