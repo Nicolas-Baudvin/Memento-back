@@ -12,6 +12,7 @@ const authRoute = require("./Routers/auth.routes");
 const listRoute = require("./Routers/list.routes");
 const taskRoute = require("./Routers/task.routes");
 const tabRoute = require("./Routers/tab.routes");
+const contactRoute = require("./Routers/contact.routes");
 
 const app = express();
 
@@ -55,5 +56,10 @@ app.use("/api/task", taskRoute);
  * Tab Routes
  */
 app.use("/api/tab", tabRoute);
+
+/**
+ * Contact Routes
+ */
+app.use("/api/contact", contactRoute);
 
 module.exports = app;
