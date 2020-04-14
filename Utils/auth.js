@@ -8,7 +8,8 @@ exports.signup = [
 ];
 
 exports.login = [
-    check("username").notEmpty().withMessage("Le champs pseudo est obligatoire"),
+    check("email").notEmpty().withMessage("Le champs pseudo est obligatoire"),
+    check("email").isEmail().withMessage("L'email est invalide"),
     check("password").isLength(6).withMessage("Le mot de passe doit comporter 6 caractères minimum")
 ];
 

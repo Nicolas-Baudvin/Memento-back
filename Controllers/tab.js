@@ -33,7 +33,7 @@ exports.create = async (req, res) => {
 
     newTab.save()
         .then(() => {
-            res.status(201).json({ "msg": "Votre table a été créer", "tabData": { name, socket, userID, "created_at": current } });
+            res.status(201).json({ "msg": "Votre table a été créé", "tabData": { name, socket, userID, "created_at": current } });
         })
         .catch((err) => {
             res.status(500).json({ err, "msg": "Une erreur est survenue sur le serveur, réessayez ou contacter un administrateur" });

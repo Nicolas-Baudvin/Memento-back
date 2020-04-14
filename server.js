@@ -57,9 +57,10 @@ server.listen(port);
 const io = require("socket.io")(server);
 const SocketAuthCtrl = require("./Controllers/SocketControllers/auth");
 const SocketTabCtrl = require("./Controllers/SocketControllers/tab");
-const url = require("url");
-const nsCreated = {};
-let matched = false;
+const Base64 = require("crypto-js/enc-base64");
+const Utf8 = require("crypto-js/enc-utf8");
+
+const roomCreated = {};
 
 io.on("connection", (socket) => {
     console.log("un utilisateur s'est connecté au réseau");
@@ -67,17 +68,13 @@ io.on("connection", (socket) => {
      * Vérification de l'identité de l'utilisateur entrant
      */
     socket.on("identify", (userData) => SocketAuthCtrl.identify(userData, socket));
-    // const { ns } = url.parse(socket.handshake.url, true).query;
 
-    // console.log(ns);
-    socket.on("new_tab", (tabData) => {
-        socket.join(tabData.name);
-    });
+    socket.on("new_tab", (tabData) => SocketTabCtrl.createTab(tabData, io, socket, roomCreated));
 
-    socket.on("room clients", (room) => {
-        console.log("vérification du nombre de client pour le channel", room);
+    socket.on("room clients", (roomData) => {
+        console.log("vérification du nombre de client pour le channel", roomData.name);
         // nombre de socket connecté au channel
-        console.log(io.sockets.adapter.rooms[room]);
+        console.log(io.sockets.adapter.rooms);
     });
 
     socket.on("disconnect", () => {
