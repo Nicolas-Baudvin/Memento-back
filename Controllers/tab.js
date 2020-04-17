@@ -1,25 +1,24 @@
+const { validationResult } = require("express-validator");
 const Tab = require("../Models/tab");
 
 exports.find = async (req, res) => {
     const { id } = req.params;
+    const tabs = await Tab.find({ "userID": id });
 
-    if (!id) {
-        return res.status(422).json({ "msg": "Id de la table non fourni" });
+    if (!tabs) {
+        return res.status(404).json({ "errors": "Table Introuvable" });
     }
 
-    const tab = await Tab.findOne({ "_id": id });
-
-    if (!tab) {
-        return res.status(404).json({ "msg": "Table Introuvable" });
-    }
-
-    const { name, created_at, socketId, userID } = tab;
-
-    res.status(200).json({ name, created_at, socketId, userID });
+    res.status(200).json({ "tabs": [...tabs] });
 };
 
 exports.create = async (req, res) => {
-    const { userID, name, socket } = req.body;
+    const { userID, name, imgPath } = req.body;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(422).json({ "errors": errors.array() });
+    }
 
     const date = new Date();
     const current = `créer le ${date.getDay()} ${date.getMonth()} ${date.getFullYear()} à ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
@@ -28,30 +27,43 @@ exports.create = async (req, res) => {
         "name": name,
         "userID": userID,
         "created_at": current,
-        "socketId": socket
+        imgPath
     });
 
     newTab.save()
-        .then(() => {
-            res.status(201).json({ "msg": "Votre table a été créé", "tabData": { name, socket, userID, "created_at": current } });
+        .then(async () => {
+            const userTabs = await Tab.find({ "userID": userID });
+
+            if (userTabs) {
+                return res.status(201).json({ "msg": "Votre table a été créé", "tabs": userTabs });
+            }
+
+            res.status(201).json({ "msg": "Votre table a été créé", "tab": { name, "created_at": current, imgPath } });
         })
         .catch((err) => {
-            res.status(500).json({ err, "msg": "Une erreur est survenue sur le serveur, réessayez ou contacter un administrateur" });
+            res.status(500).json({ err, "errors": "Une erreur est survenue sur le serveur, réessayez ou contacter un administrateur" });
         });
 
 };
 
-exports.delete = (req, res) => {
-    const { id } = req.body;
+exports.delete = async (req, res) => {
+    const { tabId, userID } = req.body;
 
     Tab.deleteOne({
-        "_id": id
+        "_id": tabId
     })
-        .then(() => {
-            res.status(200).json({ "msg": "La table a été supprimée" });
+        .then(async () => {
+
+            const userTabs = await Tab.find({ "userID": userID });
+
+            if (!userTabs) {
+                return res.status(404).json({ "errors": "Aucune table trouvée sur le serveur" });
+            }
+
+            res.status(200).json({ "msg": "La table a été supprimée", "tabs": userTabs });
         })
         .catch((err) => {
-            res.status(404).json({ "msg": "La table est introuvable", err });
+            res.status(404).json({ "errors": "La table est introuvable", err });
         });
 };
 
@@ -63,6 +75,6 @@ exports.update = (req, res) => {
             res.status(200).json({ "msg": "Table modifiée." });
         })
         .catch((err) => {
-            res.status(404).json({ "msg": "la table est introuvable", err });
+            res.status(404).json({ "errors": "la table est introuvable", err });
         });
 };
