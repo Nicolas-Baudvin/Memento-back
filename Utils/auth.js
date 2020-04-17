@@ -17,3 +17,19 @@ exports.delete = [
     check("userID").notEmpty().withMessage("Vous n'êtes pas connecté"),
     check("username").notEmpty().withMessage("Vous n'êtes pas connecté")
 ];
+
+exports.username = [
+    check("username").isLength({ "min": 3, "max": 25 }).withMessage("Le pseudo doit contenir entre 3 et 25 caractères")
+];
+
+exports.email = [
+    check("email").isEmail().withMessage("L'email est invalide")
+];
+
+exports.password = [
+    check("password").isLength({ "min": 6, "max": 30 }).withMessage("Le mot de passe doit contenir entre 6 et 30 caractères")
+];
+
+exports.forgotPassword = [
+    check("email").isEmail().withMessage("L'email fourni est invalide")
+];

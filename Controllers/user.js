@@ -97,7 +97,7 @@ exports.delete = (req, res) => {
 
 };
 
-exports.getinfo = async(req, res) => {
+exports.getinfo = async (req, res) => {
     const { id } = req.params;
     const user = await User.findOne({ "_id": id });
 
@@ -106,5 +106,25 @@ exports.getinfo = async(req, res) => {
     }
 
     res.status(200).json({ "userID": user._id, "username": user.username, "email": user.email });
+
+};
+
+exports.updateUsername = async (req, res) => {
+
+};
+
+exports.updateEmail = async (req, res) => {
+
+};
+
+exports.updatePassword = async (req, res) => {
+
+};
+
+exports.forgotPassword = async (req, res) => {
+
+};
+
+exports.newPassword = async (req, res) => {
 
 };
