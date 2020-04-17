@@ -110,6 +110,27 @@ exports.getinfo = async (req, res) => {
 };
 
 exports.updateUsername = async (req, res) => {
+    const { username, userID } = req.body;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(422).json({ "errors": errors.array() });
+    }
+
+    const user = await User.updateOne({ "_id": userID }, { "username": username });
+
+    if (!user.n) {
+        return res.status(404).json({ "errors": "Une erreur est survenue. Réessayez ou contacter l'administrateur" });
+    }
+    if (!user.nModified) {
+        return res.status(400).json({ "errors": "Ce pseudo est déjà le votre ! " });
+    }
+
+    const currentUser = await User.findOne({ "_id": userID });
+
+    currentUser.password = undefined;
+
+    return res.status(200).json({ "message": `Votre pseudo a bien été modifié. Vous répondrez désormais sous le nom de ${username}`, "userData": currentUser });
 
 };
 
