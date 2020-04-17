@@ -2,8 +2,10 @@ const mongoose = require("mongoose");
 
 const TabSchema = mongoose.Schema({
     "name": { "type": String, "isRequired": true },
-    "socketId": { "type": String, "isRequired": true },
-    "created_at": { "type": String, "isRequired": true }
+    "socketRoomName": { "type": String, "isRequired": false },
+    "created_at": { "type": String, "isRequired": true },
+    "imgPath": { "type": String, "isRequired": true },
+    "userID": { "type": String, "isRequired": true }
 });
 
-module.exports = mongoose.model("Task", TabSchema);
+module.exports = mongoose.model("Tab", TabSchema);
