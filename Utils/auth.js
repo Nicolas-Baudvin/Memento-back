@@ -14,8 +14,7 @@ exports.login = [
 ];
 
 exports.delete = [
-    check("userID").notEmpty().withMessage("Vous n'êtes pas connecté"),
-    check("username").notEmpty().withMessage("Vous n'êtes pas connecté")
+    check("userID").notEmpty().withMessage("Vous n'êtes pas connecté")
 ];
 
 exports.username = [
