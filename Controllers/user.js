@@ -1,8 +1,13 @@
 const bcrypt = require("bcrypt");
-const User = require("../Models/user");
 const jwt = require("jsonwebtoken");
 const mailer = require("nodemailer");
 const { validationResult } = require("express-validator");
+
+// Models
+const User = require("../Models/user");
+const Tab = require("../Models/tab");
+const List = require("../Models/list");
+const Task = require("../Models/task");
 
 exports.signup = async (req, res) => {
     const { email, password, username } = req.body;
@@ -86,9 +91,15 @@ exports.login = async (req, res) => {
 
 };
 
-exports.delete = (req, res) => {
-    User.deleteOne({ "_id": req.body.userID })
-        .then(() => {
+exports.delete = async (req, res) => {
+    const { userID } = req.body;
+
+    User.deleteOne({ "_id": userID })
+        .then(async () => {
+            await Tab.deleteMany({ "userID": userID });
+            await List.deleteMany({ "userID": userID });
+            await Task.deleteMany({ "userID": userID });
+
             res.status(200).json({ "errors": "Votre compte a bien été supprimé" });
         })
         .catch((err) => {
