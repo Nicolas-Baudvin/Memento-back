@@ -9,11 +9,12 @@ const router = express.Router();
 router.post("/signup/", checker.signup, authCtrl.signup);
 router.post("/login/", checker.login, authCtrl.login);
 router.post("/delete/", [checker.delete, authMw], authCtrl.delete);
-router.post("/update-username/", authCtrl.updateUsername);
-router.post("/update-email", [checker.email, authMw], authCtrl.updateEmail);
-router.post("/update-password", [checker.password, authMw], authCtrl.updatePassword);
+router.post("/update-username/", [checker.username, authMw], authCtrl.updateUsername);
+router.post("/update-email/", [checker.email, authMw], authCtrl.updateEmail);
+router.post("/update-password/", [checker.password, authMw], authCtrl.updatePassword);
 router.post("/forgot-password/", [checker.forgotPassword], authCtrl.forgotPassword);
 router.get("/user/:id", authMw, authCtrl.getinfo);
+router.get("/new-email/:token", authCtrl.newEmail);
+router.get("/new-password/:token", authCtrl.newPassword);
 
 module.exports = router;
-// , [checker.username, authMw]

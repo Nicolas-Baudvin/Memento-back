@@ -23,11 +23,30 @@ exports.username = [
 ];
 
 exports.email = [
-    check("email").isEmail().withMessage("L'email est invalide")
+    check("newEmail").isEmail().withMessage("Votre ancien email est invalide"),
+    check("oldEmail").isEmail().withMessage("Votre nouvel email est invalide"),
+    check("newEmail").custom((value, { req }) => {
+        if (value === req.body.oldEmail) {
+            throw new Error("Les deux emails doivent être différentes !");
+        } else {
+            return value;
+        }
+    })
 ];
 
 exports.password = [
-    check("password").isLength({ "min": 6, "max": 30 }).withMessage("Le mot de passe doit contenir entre 6 et 30 caractères")
+    check("newPass").isLength({ "min": 6, "max": 30 }).withMessage("Le mot de passe doit contenir entre 6 et 30 caractères"),
+    check("newPassConf").custom((value, { req }) => {
+        if (value === req.body.newPass && value === req.body.oldPass) {
+            throw new Error("Votre nouveau mot de passe doit être différent de l'ancien");
+        } else if (value !== req.body.newPass) {
+            // trow error if passwords do not match
+            throw new Error("Les mots de passes ne sont pas identiques");
+        } else {
+            return value;
+        }
+    }).withMessage("Les mots de passes ne sont pas identiques"),
+    check("oldPass").notEmpty().withMessage("L'ancien mot de passe doit être fourni")
 ];
 
 exports.forgotPassword = [

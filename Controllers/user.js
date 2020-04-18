@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const User = require("../Models/user");
 const jwt = require("jsonwebtoken");
+const mailer = require("nodemailer");
 const { validationResult } = require("express-validator");
 
 exports.signup = async (req, res) => {
@@ -123,7 +124,7 @@ exports.updateUsername = async (req, res) => {
         return res.status(404).json({ "errors": "Une erreur est survenue. Réessayez ou contacter l'administrateur" });
     }
     if (!user.nModified) {
-        return res.status(400).json({ "errors": "Ce pseudo est déjà le votre ! " });
+        return res.status(400).json({ "errors": "Ce pseudo est déjà le vôtre ! " });
     }
 
     const currentUser = await User.findOne({ "_id": userID });
@@ -135,17 +136,71 @@ exports.updateUsername = async (req, res) => {
 };
 
 exports.updateEmail = async (req, res) => {
+    const { oldEmail, newEmail } = req.body;
+    const errors = validationResult(req);
+
+    // TODO: Créer adresse email + nom de domaine & envoyer confirmation avec NodeMailer
+
+    if (!errors.isEmpty()) {
+        return res.status(422).json({ "errors": errors.array() });
+    }
+
+    res.status(200).json({ "message": "Ce service est indisponible pour le moment." });
+
+};
+
+exports.newEmail = async (req, res) => {
+
+    // TODO: Confirmation du changement d'email
 
 };
 
 exports.updatePassword = async (req, res) => {
+    const { oldPass, newPass, newPassConf, userID } = req.body;
+    const errors = validationResult(req);
 
+    if (!errors.isEmpty()) {
+        return res.status(422).json({ "errors": errors.array() });
+    }
+
+    const user = await User.findOne({ "_id": userID });
+
+    if (!user) {
+        return res.status(404).json({ "errors": "Utilisateur invalide" });
+    }
+
+    const isValid = await bcrypt.compare(oldPass, user.password);
+
+    if (!isValid) {
+        return res.status(403).json({ "errors": "L'ancien mot de passe est incorrect" });
+    }
+
+    if (newPass !== newPassConf) {
+        return res.status(422).json({ "errors": "Les mots de passes ne sont pas identiques" });
+    }
+
+    const hash = await bcrypt.hash(newPass, 10);
+
+    console.log(hash);
+    if (!hash) {
+        return res.status(500).json({ "errors": "Une erreur est survenue sur le serveur. Veuillez réessayer ou contacter un administrateur" });
+    }
+
+    user.password = hash;
+    const savedUser = await user.save();
+
+    console.log(savedUser);
+    if (!savedUser) {
+        return res.status(500).json({ "errors": "Une erreur est survenue sur le serveur. Veuillez réessayer ou contacter un administrateur" });
+    }
+
+    return res.status(200).json({ "message": "Votre mot de passe a bien été modifié" });
 };
 
 exports.forgotPassword = async (req, res) => {
-
+    // TODO: Créer adresse email + nom de domaine & envoyer nouveau mot de passe avec NodeMailer
 };
 
 exports.newPassword = async (req, res) => {
-
+    // TODO: Créer adresse email + nom de domaine & envoyer confirmation avec NodeMailer
 };
