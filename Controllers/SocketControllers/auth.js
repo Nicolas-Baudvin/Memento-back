@@ -1,17 +1,21 @@
 const jwt = require("jsonwebtoken");
 
-exports.identify = (userData, socket) => {
+exports.identify = async (userData, socket) => {
+
     const { token, userID } = userData;
 
-    console.log("Identification en cours de l'utilisateur...", token, userID);
+    try {
+        const decoded = jwt.verify(token, process.env.SECRET_TOKEN_KEY);
 
-    const decoded = jwt.verify(token, process.env.SECRET_TOKEN_KEY);
-
-    if (decoded.userID !== userID) {
-        console.log("deconnexion de l'utilisateur => mauvaise identitée");
-        socket.emit("fail_identify");
-        return socket.disconnect();
+        if (decoded.userID !== userID) {
+            console.log("deconnexion de l'utilisateur => mauvaise identitée");
+            socket.emit("fail_identify");
+            return socket.disconnect();
+        }
+        console.log("Connexion authentifiée");
+        return socket.emit("success identify");
+    } catch (e) {
+        throw new Error({ e, "errors": "Une erreur est survenue" });
     }
 
-    return socket.emit("success_identify");
 };

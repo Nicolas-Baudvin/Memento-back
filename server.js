@@ -69,7 +69,7 @@ io.on("connection", (socket) => {
      */
     socket.on("identify", (userData) => SocketAuthCtrl.identify(userData, socket));
 
-    socket.on("new_tab", (tabData) => SocketTabCtrl.createTab(tabData, io, socket, roomCreated));
+    socket.on("new_tab", (data) => SocketTabCtrl.createTab(data, io, socket, roomCreated));
 
     socket.on("room clients", (roomData) => {
         console.log("vérification du nombre de client pour le channel", roomData.name);
