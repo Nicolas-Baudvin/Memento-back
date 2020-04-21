@@ -57,8 +57,6 @@ server.listen(port);
 const io = require("socket.io")(server);
 const SocketAuthCtrl = require("./Controllers/SocketControllers/auth");
 const SocketTabCtrl = require("./Controllers/SocketControllers/tab");
-const Base64 = require("crypto-js/enc-base64");
-const Utf8 = require("crypto-js/enc-utf8");
 
 const roomCreated = {};
 
@@ -80,4 +78,6 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => {
         console.log("déconnexion d'un utilisateur");
     });
+
+    socket.on("join tab", (link) => SocketTabCtrl.joinTab(link, io, socket, roomCreated));
 });
