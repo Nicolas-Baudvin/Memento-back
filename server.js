@@ -76,7 +76,14 @@ io.on("connection", (socket) => {
     });
 
     socket.on("disconnect", () => {
-        console.log("déconnexion d'un utilisateur");
+        const keys = Object.keys(socket.adapter.rooms);
+        
+        keys.forEach((key) => {
+            socket.to(key).emit("user leave", socket.id);
+        });
+        
+        console.log("déconnexion d'un utilisateur", keys);
+        socket.leaveAll();
     });
 
     socket.on("join tab", (link) => SocketTabCtrl.joinTab(link, io, socket, roomCreated));

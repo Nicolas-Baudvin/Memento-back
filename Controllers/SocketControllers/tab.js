@@ -6,7 +6,6 @@ const axios = require("axios");
 const Tab = require("../../Models/tab");
 
 exports.createTab = (data, io, socket, roomCreated) => {
-    console.log("Création d'une nouvelle table Online en cours...", data);
     // encrypt tabname
     const cryptdRoom = Base64.stringify(Utf8.parse(`${data.name}-${data.username}`));
 
@@ -19,8 +18,6 @@ exports.createTab = (data, io, socket, roomCreated) => {
     roomCreated[cryptdRoom].guests = [];
 
     socket.emit("confirm creation", roomCreated[cryptdRoom]);
-
-    console.log("Le réseau compote désormais ", roomCreated);
 };
 
 exports.joinTab = async (data, io, socket, roomCreated) => {
@@ -38,8 +35,8 @@ exports.joinTab = async (data, io, socket, roomCreated) => {
 
     socket.emit("tab joined", { "socket": roomCreated[link], "tabData": tab });
 
-    io.to(link).emit("user joined room", { "message": `${userData.username} a rejoint votre tableau !`, userData });
+    io.to(link).emit("user joined room", { "message": `${userData.username} a rejoint votre tableau !`, "userData": { ...userData, "socketId": socket.id } });
 
-    console.log("Succès ! Détails de la table rejointe : ", { "socket": roomCreated[link], "tabData": tab });
+    console.log(socket.id);
 
 };
