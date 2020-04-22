@@ -5,7 +5,15 @@ const axios = require("axios");
 // Model
 const Tab = require("../../Models/tab");
 
-exports.createTab = (data, io, socket, roomCreated) => {
+exports.createTab = async (data, io, socket, roomCreated) => {
+    const tab = await Tab.findOne({ "_id": data.id });
+
+    if (!tab) {
+        return socket.emit("create error", { "errors": "La table que vous tentez de créer n'existe pas !", "redirect": true });
+    }
+    if (tab.userID !== data.userID) {
+        return socket.emit("create error", { "errors": "Cette table ne vous appartient pas.", "redirect": true });
+    }
     // encrypt tabname
     const cryptdRoom = Base64.stringify(Utf8.parse(`${data.name}-${data.username}`));
 
@@ -16,6 +24,7 @@ exports.createTab = (data, io, socket, roomCreated) => {
     roomCreated[cryptdRoom].invitationLink = `${cryptdRoom}`;
     roomCreated[cryptdRoom]._id = data.id;
     roomCreated[cryptdRoom].guests = [];
+    roomCreated[cryptdRoom].tab = tab;
 
     socket.emit("confirm creation", roomCreated[cryptdRoom]);
 };
@@ -38,5 +47,9 @@ exports.joinTab = async (data, io, socket, roomCreated) => {
     io.to(link).emit("user joined room", { "message": `${userData.username} a rejoint votre tableau !`, "userData": { ...userData, "socketId": socket.id } });
 
     console.log(socket.id);
+
+};
+
+exports.leaveRoom = (room, io, socket, roomCreated) => {
 
 };
