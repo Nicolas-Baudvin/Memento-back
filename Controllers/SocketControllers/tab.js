@@ -1,6 +1,5 @@
 const Base64 = require("crypto-js/enc-base64");
 const Utf8 = require("crypto-js/enc-utf8");
-const axios = require("axios");
 
 // Model
 const Tab = require("../../Models/tab");
@@ -40,11 +39,11 @@ exports.joinTab = async (data, io, socket, roomCreated) => {
 
     const tab = await Tab.findOne({ "_id": friendTabId });
 
-    roomCreated[link].guests = [...roomCreated[link].guests, userData];
+    roomCreated[link].guests = [...roomCreated[link].guests, { "userData": { ...userData, "socketId": socket.id } }];
 
     socket.emit("tab joined", { "socket": roomCreated[link], "tabData": tab });
 
-    io.to(link).emit("user joined room", { "message": `${userData.username} a rejoint votre tableau !`, "userData": { ...userData, "socketId": socket.id } });
+    io.to(link).emit("user joined room", { "message": `${userData.username} a rejoint votre tableau !`, "userData": { ...userData, "socketId": socket.id }, "currentSocket": roomCreated[link] });
 
     console.log(socket.id);
 

@@ -77,14 +77,21 @@ io.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
         const keys = Object.keys(socket.adapter.rooms);
-        
-        keys.forEach((key) => {
-            socket.to(key).emit("user leave", socket.id);
+        const rooms = Object.keys(roomCreated);
+
+        rooms.forEach((room) => {
+            roomCreated[room].guests = roomCreated[room].guests.filter((x) => x.userData.socketId !== socket.id);
         });
-        
-        console.log("déconnexion d'un utilisateur", keys);
+
+        keys.forEach((key) => {
+            socket.to(key).emit("user leave", { "socketId": socket.id, "currentSocket": roomCreated[key] });
+        });
+
+        console.log("déconnexion d'un utilisateur", roomCreated);
         socket.leaveAll();
     });
 
     socket.on("join tab", (link) => SocketTabCtrl.joinTab(link, io, socket, roomCreated));
+
+    socket.on("leave room", (room) => SocketTabCtrl.leaveRoom(room, io, socket, roomCreated));
 });
