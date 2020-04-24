@@ -50,5 +50,13 @@ exports.joinTab = async (data, io, socket, roomCreated) => {
 };
 
 exports.leaveRoom = (room, io, socket, roomCreated) => {
+    console.log("Un utilisateur quitte le salon", room.name);
 
+    const { name, userData } = room;
+
+    roomCreated[name].guests = roomCreated[name].guests.filter((guest) => guest.userData.userID !== userData.userID);
+    io.to(name).emit("user leave", { "message": `${userData.username} a quitté votre instance`, userData, "socketId": socket.id, "currentSocket": roomCreated[name] });
+
+    socket.leave(name);
+    socket.disconnect();
 };
