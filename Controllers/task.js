@@ -6,10 +6,7 @@ exports.find = async (req, res) => {
 
     const tasks = await Task.find({ tabId });
 
-    console.log(tasks);
-
     res.status(200).json({ tasks });
-
 };
 
 exports.create = async (req, res) => {
@@ -21,8 +18,6 @@ exports.create = async (req, res) => {
     }
 
     const order = await Task.find({ listId }).length;
-
-    console.log(order);
 
     const newTask = new Task({
         title,
@@ -40,7 +35,6 @@ exports.create = async (req, res) => {
         .catch((err) => {
             res.status(400).json({ err });
         });
-
 };
 
 exports.delete = (req, res) => {

@@ -1,5 +1,7 @@
 const { validationResult } = require("express-validator");
 const Tab = require("../Models/tab");
+const List = require("../Models/list");
+const Task = require("../Models/task");
 
 exports.find = async (req, res) => {
     const { id } = req.params;
@@ -50,7 +52,8 @@ exports.delete = async (req, res) => {
     const { tabId, userID } = req.body;
 
     Tab.deleteOne({
-        "_id": tabId
+        "_id": tabId,
+        userID
     })
         .then(async () => {
 
@@ -59,6 +62,9 @@ exports.delete = async (req, res) => {
             if (!userTabs) {
                 return res.status(404).json({ "errors": "Aucune table trouvée sur le serveur" });
             }
+
+            await List.deleteMany({ tabId });
+            await Task.deleteMany({ tabId });
 
             res.status(200).json({ "msg": "La table a été supprimée", "tabs": userTabs });
         })

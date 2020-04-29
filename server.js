@@ -94,4 +94,12 @@ io.on("connection", (socket) => {
     socket.on("join tab", (link) => SocketTabCtrl.joinTab(link, io, socket, roomCreated));
 
     socket.on("leave room", (room) => SocketTabCtrl.leaveRoom(room, io, socket, roomCreated));
+
+    socket.on("end", () => {
+        socket.disconnect();
+    });
+
+    socket.on("send lists", (lists) => SocketTabCtrl.sendLists(lists, io, socket, roomCreated));
+
+    socket.on("send tasks", (tasks) => SocketTabCtrl.sendTasks(tasks, io, socket, roomCreated));
 });
