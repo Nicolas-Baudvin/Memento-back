@@ -7,7 +7,6 @@ exports.identify = async (userData, socket) => {
     try {
         const decoded = jwt.verify(token, process.env.SECRET_TOKEN_KEY);
 
-        console.log(decoded);
         if (decoded.userID !== userID) {
             socket.emit("fail_identify");
             socket.leaveAll();

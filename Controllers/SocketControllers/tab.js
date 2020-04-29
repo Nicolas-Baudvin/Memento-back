@@ -1,5 +1,6 @@
 const Base64 = require("crypto-js/enc-base64");
 const Utf8 = require("crypto-js/enc-utf8");
+const { decryptUserData, cryptUserData } = require("../../Utils/crypt");
 
 // Model
 const Tab = require("../../Models/tab");
@@ -44,13 +45,9 @@ exports.joinTab = async (data, io, socket, roomCreated) => {
     socket.emit("tab joined", { "socket": roomCreated[link], "tabData": tab });
 
     io.to(link).emit("user joined room", { "message": `${userData.username} a rejoint votre tableau !`, "userData": { ...userData, "socketId": socket.id }, "currentSocket": roomCreated[link] });
-
-    console.log(socket.id);
-
 };
 
 exports.leaveRoom = (room, io, socket, roomCreated) => {
-    console.log("Un utilisateur quitte le salon", room.name);
 
     const { name, userData } = room;
 
@@ -59,4 +56,21 @@ exports.leaveRoom = (room, io, socket, roomCreated) => {
 
     socket.leave(name);
     socket.disconnect();
+};
+
+/**
+ * List Controller
+ */
+
+exports.sendLists = (lists, io, socket, roomCreated) => {
+
+    const decryptedLists = decryptUserData(lists[0]);
+
+    console.log(decryptedLists);
+
+};
+
+exports.sendTasks = (tasks, io, socket, roomCreated) => {
+    console.log(tasks);
+
 };
