@@ -1,6 +1,5 @@
 const Base64 = require("crypto-js/enc-base64");
 const Utf8 = require("crypto-js/enc-utf8");
-const { decryptUserData, cryptUserData } = require("../../Utils/crypt");
 
 // Model
 const Tab = require("../../Models/tab");
@@ -63,14 +62,12 @@ exports.leaveRoom = (room, io, socket, roomCreated) => {
  */
 
 exports.sendLists = (lists, io, socket, roomCreated) => {
-
-    const decryptedLists = decryptUserData(lists[0]);
-
-    console.log(decryptedLists);
-
+    console.log("partage des listes", lists);
+    roomCreated[lists[1]].lists = lists[0];
+    io.to(lists[1]).emit("send owner lists", roomCreated[lists[1]]);
 };
 
 exports.sendTasks = (tasks, io, socket, roomCreated) => {
-    console.log(tasks);
-
+    roomCreated[tasks[1]].tasks = tasks[0];
+    io.to(tasks[1]).emit("send owner tasks", roomCreated[tasks[1]]);
 };

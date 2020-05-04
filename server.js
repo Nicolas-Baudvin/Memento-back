@@ -80,7 +80,10 @@ io.on("connection", (socket) => {
         const rooms = Object.keys(roomCreated);
 
         rooms.forEach((room) => {
-            roomCreated[room].guests = roomCreated[room].guests.filter((x) => x.userData.socketId !== socket.id);
+            console.log(roomCreated[room].guests);
+            if (roomCreated[room].guests) {
+                roomCreated[room].guests = roomCreated[room].guests.filter((x) => x.userData.socketId !== socket.id);
+            }
         });
 
         keys.forEach((key) => {
