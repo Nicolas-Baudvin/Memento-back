@@ -1,4 +1,5 @@
 const List = require("../Models/list");
+const Task = require("../Models/task");
 const { validationResult } = require("express-validator");
 
 exports.find = async (req, res) => {
@@ -31,24 +32,50 @@ exports.create = (req, res) => {
     newList.save()
         .then(async (doc) => {
             console.log(doc);
-            const lists = await List.find({"tabId": tabId });
-            
+            const lists = await List.find({ "tabId": tabId });
+
             res.status(201).json({ lists });
-            
         })
         .catch((err) => {
             console.log(err);
             res.status(400).json({ err });
         });
-
-
-
 };
 
-exports.delete = (req, res) => {
+exports.delete = async (req, res) => {
+    const { userID, listID, tabId } = req.body;
 
+    try {
+        const deletedLists = await List.deleteOne({ "_id": listID });
+        const deletedTasks = await Task.deleteMany({ "listId": listID });
+
+        console.log("deleted List", deletedLists, "\n", "deleted Tasks", deletedTasks);
+
+        const lists = await List.find({ "tabId": tabId });
+
+        res.status(200).json({ lists });
+    }
+    catch (err) {
+        console.log(err);
+        res.status(404).json({ "errors": "Liste introuvable", err });
+    }
 };
 
-exports.update = (req, res) => {
+exports.update = async (req, res) => {
+    const { userID, tabId, listData } = req.body;
+
+    console.log("nouveau nom", listData, );
+
+    try {
+        const updated = await List.updateOne({ "_id": listData.list._id }, { "name": listData.newTitle });
+
+        console.log(updated);
+
+        const lists = await List.find({ "tabId": tabId });
+
+        res.status(200).json({ lists });
+    } catch (err) {
+        res.status(404).json({ "errors": "Liste introuvable", err });
+    }
 
 };

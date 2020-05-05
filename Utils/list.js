@@ -12,4 +12,6 @@ exports.find = [];
 
 exports.update = [];
 
-exports.delete = [];
+exports.delete = [
+    check("listID").notEmpty().withMessage("Id de la liste introuvable")
+];
