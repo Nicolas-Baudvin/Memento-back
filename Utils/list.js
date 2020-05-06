@@ -1,4 +1,4 @@
-const { check } = require("express-validator");
+const { check, checkSchema } = require("express-validator");
 
 
 exports.create = [
@@ -10,7 +10,9 @@ exports.create = [
 
 exports.find = [];
 
-exports.update = [];
+exports.update = [
+    check("listData").notEmpty().withMessage("Le nouveau nom ne peut pas être vide")
+];
 
 exports.delete = [
     check("listID").notEmpty().withMessage("Id de la liste introuvable")
