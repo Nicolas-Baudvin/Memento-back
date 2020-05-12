@@ -68,6 +68,7 @@ exports.sendLists = (lists, io, socket, roomCreated) => {
 };
 
 exports.sendTasks = (tasks, io, socket, roomCreated) => {
+    console.log(tasks);
     roomCreated[tasks[1]].tasks = tasks[0];
     io.to(tasks[1]).emit("send owner tasks", roomCreated[tasks[1]]);
 };
