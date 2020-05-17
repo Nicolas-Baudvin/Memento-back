@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const SenderSchema = mongoose.Schema({
+const SenderSchema = new mongoose.Schema({
     "email": { "type": String, "isRequired": true },
     "subject": { "type": String, "isRequired": true },
     "message": { "type": String, "isRequired": true }

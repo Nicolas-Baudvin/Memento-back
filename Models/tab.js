@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const TabSchema = mongoose.Schema({
+const TabSchema = new mongoose.Schema({
     "name": { "type": String, "isRequired": true },
     "socketRoomName": { "type": String, "isRequired": false },
     "created_at": { "type": String, "isRequired": true },
