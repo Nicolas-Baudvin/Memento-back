@@ -64,8 +64,6 @@ exports.delete = async (req, res) => {
 exports.update = async (req, res) => {
     const { userID, tabId, listData } = req.body;
 
-    console.log("nouveau nom", listData, );
-
     try {
         const updated = await List.updateOne({ "_id": listData.list._id }, { "name": listData.newTitle });
 

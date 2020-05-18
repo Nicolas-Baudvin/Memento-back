@@ -62,13 +62,11 @@ exports.leaveRoom = (room, io, socket, roomCreated) => {
  */
 
 exports.sendLists = (lists, io, socket, roomCreated) => {
-    console.log("partage des listes", lists);
     roomCreated[lists[1]].lists = lists[0];
     io.to(lists[1]).emit("send owner lists", roomCreated[lists[1]]);
 };
 
 exports.sendTasks = (tasks, io, socket, roomCreated) => {
-    console.log(tasks);
     roomCreated[tasks[1]].tasks = tasks[0];
     io.to(tasks[1]).emit("send owner tasks", roomCreated[tasks[1]]);
 };

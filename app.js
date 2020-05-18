@@ -13,6 +13,7 @@ const listRoute = require("./Routers/list.routes");
 const taskRoute = require("./Routers/task.routes");
 const tabRoute = require("./Routers/tab.routes");
 const contactRoute = require("./Routers/contact.routes");
+const actionsRoute = require("./Routers/action.routes");
 
 const app = express();
 
@@ -22,7 +23,7 @@ mongoose.connect(process.env.MONGO_CONNECTION_LINK,
         "useUnifiedTopology": true
     })
     .then(() => console.log("Connexion à MongoDB réussie !"))
-    .catch(() => console.log("Connexion à MongoDB échouée !"));
+    .catch((e) => console.log("Connexion à MongoDB échouée !", e));
 
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -61,5 +62,10 @@ app.use("/api/tab", tabRoute);
  * Contact Routes
  */
 app.use("/api/contact", contactRoute);
+
+/**
+ * Actions Routes
+ */
+app.use("/api/actions", actionsRoute);
 
 module.exports = app;
