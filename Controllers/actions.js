@@ -27,7 +27,6 @@ exports.find = async (req, res) => {
     const { tabId, userID } = req.body;
 
     try {
-
         const actions = await Actions.find({ tabId });
         
         res.status(200).json({ actions });
