@@ -70,3 +70,7 @@ exports.sendTasks = (tasks, io, socket, roomCreated) => {
     roomCreated[tasks[1]].tasks = tasks[0];
     io.to(tasks[1]).emit("send owner tasks", roomCreated[tasks[1]]);
 };
+
+exports.sendActions = (actions, io, socket, roomCreated) => {
+    io.to(actions[1]).emit("send tab actions", actions[0]);
+};
