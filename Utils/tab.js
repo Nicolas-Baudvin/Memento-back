@@ -13,7 +13,11 @@ exports.delete = [
     check("tabId").notEmpty().withMessage("Cette table est introuvable.")
 ];
 
-exports.update = [
-    check("name").notEmpty().withMessage("Vous devez au moins remplir un champs"),
-    check("id").notEmpty().withMessage("Cette table est introuvable.")
+exports.updateName = [
+    check("name").notEmpty().withMessage("Vous devez au moins remplir un champs")
 ];
+
+exports.updatePic = [
+    check("imgPath").notEmpty().withMessage("Image non valide")
+];
+

@@ -2,6 +2,7 @@ const { validationResult } = require("express-validator");
 const Tab = require("../Models/tab");
 const List = require("../Models/list");
 const Task = require("../Models/task");
+const Action = require("../Models/actions");
 
 exports.find = async (req, res) => {
     const { id } = req.params;
@@ -63,20 +64,37 @@ exports.delete = async (req, res) => {
                 return res.status(404).json({ "errors": "Aucune table trouvée sur le serveur" });
             }
 
-            await List.deleteMany({ tabId });
-            await Task.deleteMany({ tabId });
+            try {
 
-            res.status(200).json({ "msg": "La table a été supprimée", "tabs": userTabs });
+                await List.deleteMany({ tabId });
+                await Task.deleteMany({ tabId });
+                await Action.deleteMany({ tabId });
+                res.status(200).json({ "msg": "La table a été supprimée", "tabs": userTabs });
+            } catch (e) {
+                res.status(500).json({ e, "errors": "Erreur serveur" });
+            }
         })
         .catch((err) => {
             res.status(404).json({ "errors": "La table est introuvable", err });
         });
 };
 
-exports.update = (req, res) => {
-    const { name, id, userID } = req.body;
+exports.updateName = (req, res) => {
+    const { name, tabId, userID } = req.body;
 
-    Tab.updateOne({ "_id": id }, { name })
+    Tab.updateOne({ "_id": tabId }, { name })
+        .then(() => {
+            res.status(200).json({ "msg": "Table modifiée." });
+        })
+        .catch((err) => {
+            res.status(404).json({ "errors": "la table est introuvable", err });
+        });
+};
+
+exports.updatePic = (req, res) => {
+    const { imgPath, tabId, userID } = req.body;
+
+    Tab.updateOne({ "_id": tabId }, { imgPath })
         .then(() => {
             res.status(200).json({ "msg": "Table modifiée." });
         })
