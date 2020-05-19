@@ -6,7 +6,8 @@ const TaskSchema = new mongoose.Schema({
     "listId": { "type": String, "required": true },
     "label": { "type": String, "required": false },
     "tabId": { "type": String, "required": true },
-    "colorLabel": { "type": String, "required": false }
+    "colorLabel": { "type": String, "required": false },
+    "assigned": { "type": String, "required": false }
 });
 
 module.exports = mongoose.model("Task", TaskSchema);
