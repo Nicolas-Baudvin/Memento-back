@@ -1,8 +1,11 @@
 const Base64 = require("crypto-js/enc-base64");
 const Utf8 = require("crypto-js/enc-utf8");
+const { cryptUserData } = require("../../Utils/crypt");
 
 // Model
 const Tab = require("../../Models/tab");
+const List = require("../../Models/list");
+const Task = require("../../Models/task");
 
 exports.createTab = async (data, io, socket, roomCreated) => {
     const tab = await Tab.findOne({ "_id": data.id });
@@ -38,10 +41,15 @@ exports.joinTab = async (data, io, socket, roomCreated) => {
     socket.join(link);
 
     const tab = await Tab.findOne({ "_id": friendTabId });
+    const lists = await List.find({ "tabId": tab._id });
+    const tasks = await Task.find({ "tabId": tab._id });
+
+    const cryptedLists = await cryptUserData(lists);
+    const cryptedTasks = await cryptUserData(tasks);
 
     roomCreated[link].guests = [...roomCreated[link].guests, { "userData": { ...userData, "socketId": socket.id } }];
 
-    socket.emit("tab joined", { "socket": roomCreated[link], "tabData": tab });
+    socket.emit("tab joined", { "socket": roomCreated[link], "tabData": tab, "lists": cryptedLists, "tasks": cryptedTasks });
 
     io.to(link).emit("user joined room", { "message": `${userData.username} a rejoint votre tableau !`, "userData": { ...userData, "socketId": socket.id }, "currentSocket": roomCreated[link] });
 };
