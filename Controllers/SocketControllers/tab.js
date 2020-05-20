@@ -32,7 +32,7 @@ exports.joinTab = async (data, io, socket, roomCreated) => {
     const { link, friendTabId, userData } = data;
 
     if (!roomCreated[link] || typeof roomCreated[link] === "undefined") {
-        return socket.emit("join error", { "errors": "La table que vous essayiez de rejoindre n'existe pas" });
+        return socket.emit("join error", { "errors": "La table que vous essayez de rejoindre n'existe pas" });
     }
 
     socket.join(link);
@@ -57,10 +57,6 @@ exports.leaveRoom = (room, io, socket, roomCreated) => {
     socket.disconnect();
 };
 
-/**
- * List Controller
- */
-
 exports.sendLists = (lists, io, socket, roomCreated) => {
     roomCreated[lists[1]].lists = lists[0];
     io.to(lists[1]).emit("send owner lists", roomCreated[lists[1]]);
@@ -73,4 +69,9 @@ exports.sendTasks = (tasks, io, socket, roomCreated) => {
 
 exports.sendActions = (actions, io, socket, roomCreated) => {
     io.to(actions[1]).emit("send tab actions", actions[0]);
+};
+
+exports.sendTab = (tab, io, socket, roomCreated) => {
+    roomCreated[tab[1]].tab = tab[0];
+    io.to(tab[1]).emit("tab updated", { "tab": tab[0], "currentSocket": roomCreated[tab[1]] });
 };

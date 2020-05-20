@@ -79,26 +79,35 @@ exports.delete = async (req, res) => {
         });
 };
 
-exports.updateName = (req, res) => {
+
+// TODO: Fusionner les deux controlleurs
+
+exports.updateName = async (req, res) => {
     const { name, tabId, userID } = req.body;
 
-    Tab.updateOne({ "_id": tabId }, { name })
-        .then(() => {
-            res.status(200).json({ "msg": "Table modifiée." });
-        })
-        .catch((err) => {
-            res.status(404).json({ "errors": "la table est introuvable", err });
-        });
+    console.log(tabId);
+    try {
+        await Tab.updateOne({ "_id": tabId }, { name });
+        const tab = await Tab.findOne({ "_id": tabId });
+
+        res.status(200).json({ tab });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ e, "errors": "Erreur serveur" });
+    }
 };
 
-exports.updatePic = (req, res) => {
+exports.updatePic = async(req, res) => {
     const { imgPath, tabId, userID } = req.body;
+    
 
-    Tab.updateOne({ "_id": tabId }, { imgPath })
-        .then(() => {
-            res.status(200).json({ "msg": "Table modifiée." });
-        })
-        .catch((err) => {
-            res.status(404).json({ "errors": "la table est introuvable", err });
-        });
+    try {
+        await Tab.updateOne({ "_id": tabId }, { imgPath });
+        const tab = await Tab.findOne({ "_id": tabId });
+
+        console.log(tab);
+        res.status(200).json({ tab });
+    } catch (e) {
+        res.status(500).json({ e, "errors": "Erreur serveur" });
+    }
 };
