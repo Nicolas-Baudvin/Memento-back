@@ -33,7 +33,7 @@ exports.create = async (req, res) => {
             res.status(201).json({ tasks });
         })
         .catch((err) => {
-            console.log(err)
+            console.log(err);
             res.status(400).json({ err });
         });
 };
@@ -45,11 +45,10 @@ exports.delete = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(422).json({ "errors": errors.array() });
     }
-    
+
     try {
         const deleted = await Task.deleteOne({ "_id": taskId });
-        
-        console.log(deleted, taskId);
+
         if (deleted.ok) {
             const tasks = await Task.find({ tabId });
 
@@ -122,4 +121,23 @@ exports.updateOrder = async (req, res) => {
         res.status(404).json({ e, "errors": "Tâche introuvable" });
     }
 
+};
+
+exports.updateAssign = async (req, res) => {
+    const { username, userID, taskId, tabId } = req.body;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(422).json({ "errors": errors.array() });
+    }
+
+    try {
+        await Task.updateOne({ "_id": taskId }, { "assigned": username });
+        const tasks = await Task.find({ tabId });
+
+        return res.status(200).json({ tasks });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({ e, "errors": "Erreur serveur " });
+    }
 };

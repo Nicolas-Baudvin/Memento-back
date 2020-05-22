@@ -17,3 +17,7 @@ exports.updateLabel = [
 exports.updateOrder = [
     check("order").isInt().withMessage("Nombre entier attendu")
 ];
+
+exports.assignTask = [
+    check("username").notEmpty().withMessage("La tâche doit être assignée à quelqu'un")
+];
