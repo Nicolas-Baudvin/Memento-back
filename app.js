@@ -14,6 +14,7 @@ const taskRoute = require("./Routers/task.routes");
 const tabRoute = require("./Routers/tab.routes");
 const contactRoute = require("./Routers/contact.routes");
 const actionsRoute = require("./Routers/action.routes");
+const favRoute = require("./Routers/fav.routes");
 
 const app = express();
 
@@ -67,5 +68,10 @@ app.use("/api/contact", contactRoute);
  * Actions Routes
  */
 app.use("/api/actions", actionsRoute);
+
+/**
+ * Fav Routes
+ */
+app.use("/api/favs", favRoute);
 
 module.exports = app;
