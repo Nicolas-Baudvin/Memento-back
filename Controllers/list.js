@@ -44,12 +44,11 @@ exports.create = (req, res) => {
 
 exports.delete = async (req, res) => {
     const { userID, listID, tabId } = req.body;
-
+    
+    console.log(listID, tabId)
     try {
-        const deletedLists = await List.deleteOne({ "_id": listID });
-        const deletedTasks = await Task.deleteMany({ "listId": listID });
-
-        console.log("deleted List", deletedLists, "\n", "deleted Tasks", deletedTasks);
+        await List.deleteOne({ "_id": listID });
+        await Task.deleteMany({ "listId": listID });
 
         const lists = await List.find({ "tabId": tabId });
 
