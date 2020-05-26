@@ -15,7 +15,7 @@ exports.updateLabel = [
 ];
 
 exports.updateOrder = [
-    check("order").isInt().withMessage("Nombre entier attendu")
+    check("tasks").isArray()
 ];
 
 exports.assignTask = [
