@@ -62,25 +62,16 @@ const roomCreated = {};
 
 io.on("connection", (socket) => {
     console.log("un utilisateur s'est connecté au réseau");
-    /**
-     * Vérification de l'identité de l'utilisateur entrant
-     */
+
     socket.on("identify", (userData) => SocketAuthCtrl.identify(userData, socket));
 
     socket.on("new_tab", (data) => SocketTabCtrl.createTab(data, io, socket, roomCreated));
-
-    socket.on("room clients", (roomData) => {
-        console.log("vérification du nombre de client pour le channel", roomData.name);
-        // nombre de socket connecté au channel
-        console.log(io.sockets.adapter.rooms);
-    });
 
     socket.on("disconnect", () => {
         const keys = Object.keys(socket.adapter.rooms);
         const rooms = Object.keys(roomCreated);
 
         rooms.forEach((room) => {
-            console.log(roomCreated[room].guests);
             if (roomCreated[room].guests) {
                 roomCreated[room].guests = roomCreated[room].guests.filter((x) => x.userData.socketId !== socket.id);
             }
@@ -89,8 +80,6 @@ io.on("connection", (socket) => {
         keys.forEach((key) => {
             socket.to(key).emit("user leave", { "socketId": socket.id, "currentSocket": roomCreated[key] });
         });
-
-        console.log("déconnexion d'un utilisateur", roomCreated);
         socket.leaveAll();
     });
 
