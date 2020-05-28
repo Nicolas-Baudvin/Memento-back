@@ -1,6 +1,7 @@
-const Base64 = require("crypto-js/enc-base64");
-const Utf8 = require("crypto-js/enc-utf8");
-const { cryptUserData } = require("../../Utils/crypt");
+const Base64 = require("crypto-js/enc-base64"),
+    Utf8 = require("crypto-js/enc-utf8"),
+    { cryptUserData } = require("../../Utils/crypt"),
+    Message = require("../../Models/message");
 
 // Model
 const Tab = require("../../Models/tab");
@@ -82,4 +83,30 @@ exports.sendActions = (actions, io, socket, roomCreated) => {
 exports.sendTab = (tab, io, socket, roomCreated) => {
     roomCreated[tab[1]].tab = tab[0];
     io.to(tab[1]).emit("tab updated", { "tab": tab[0], "currentSocket": roomCreated[tab[1]] });
+};
+
+exports.sendMessage = async (data, io, socket) => {
+    const { message, link } = data,
+        { title, author, authorID, tabId } = message;
+
+    if (!title.length || title.length > 200)
+        return socket.emit("send message failed", ("Le message doit faire obligatoirement entre 1 et 200 caractères"));
+
+    const newMessage = new Message({
+        title,
+        author,
+        authorID,
+        tabId
+    });
+
+    try {
+        await newMessage.save();
+
+        const messages = await Message.find({ tabId });
+
+        return io.to(link).emit("send message", messages);
+
+    } catch (e) {
+        return socket.emit("send message failed", { "errors": "Le message doit faire obligatoirement entre 1 et 200 caractères", e });
+    }
 };

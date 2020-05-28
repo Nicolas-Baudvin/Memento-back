@@ -98,4 +98,6 @@ io.on("connection", (socket) => {
     socket.on("send actions", (actions) => SocketTabCtrl.sendActions(actions, io, socket, roomCreated));
 
     socket.on("send tab", (tab) => SocketTabCtrl.sendTab(tab, io, socket, roomCreated));
+
+    socket.on("send message", (message) => SocketTabCtrl.sendMessage(message, io, socket));
 });

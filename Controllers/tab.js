@@ -1,8 +1,8 @@
-const { validationResult } = require("express-validator");
-const Tab = require("../Models/tab");
-const List = require("../Models/list");
-const Task = require("../Models/task");
-const Action = require("../Models/actions");
+const { validationResult } = require("express-validator"),
+    Tab = require("../Models/tab"),
+    List = require("../Models/list"),
+    Task = require("../Models/task"),
+    Action = require("../Models/actions");
 
 exports.find = async (req, res) => {
     const { id } = req.params;

@@ -1,6 +1,6 @@
-const List = require("../Models/list");
-const Task = require("../Models/task");
-const { validationResult } = require("express-validator");
+const List = require("../Models/list"),
+    Task = require("../Models/task"),
+    { validationResult } = require("express-validator");
 
 exports.find = async (req, res) => {
     const { tabId } = req.body;

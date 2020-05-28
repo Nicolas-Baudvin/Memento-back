@@ -1,5 +1,5 @@
-const Fav = require("../Models/fav");
-const Tab = require("../Models/tab");
+const Fav = require("../Models/fav"),
+    Tab = require("../Models/tab");
 
 exports.newFav = async (req, res) => {
     const { tabId, userID } = req.body;

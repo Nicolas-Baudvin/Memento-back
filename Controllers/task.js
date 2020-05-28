@@ -1,6 +1,6 @@
-const Task = require("../Models/task");
-const List = require("../Models/list");
-const { validationResult } = require("express-validator");
+const Task = require("../Models/task"),
+    List = require("../Models/list"),
+    { validationResult } = require("express-validator");
 
 exports.find = async (req, res) => {
     const { tabId } = req.body;
@@ -51,7 +51,7 @@ exports.delete = async (req, res) => {
         const task = await Task.findOne({ "_id": taskId });
         const listId = task.listId;
         const deleted = await Task.deleteOne({ "_id": taskId });
-        
+
         if (deleted.ok) {
             const tasks = await Task.find({ tabId });
 

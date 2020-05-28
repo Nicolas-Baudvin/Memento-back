@@ -15,6 +15,7 @@ const tabRoute = require("./Routers/tab.routes");
 const contactRoute = require("./Routers/contact.routes");
 const actionsRoute = require("./Routers/action.routes");
 const favRoute = require("./Routers/fav.routes");
+const chatRoute = require("./Routers/chat.routes");
 
 const app = express();
 
@@ -39,39 +40,20 @@ app.use(helmet());
 
 app.use(bodyParser.json());
 
-/**
- * Authentification Routes
- */
 app.use("/api/auth", authRoute);
 
-/**
- * Lists Routes
- */
 app.use("/api/list", listRoute);
 
-/**
- * Tasks Routes
- */
 app.use("/api/task", taskRoute);
 
-/**
- * Tab Routes
- */
 app.use("/api/tab", tabRoute);
 
-/**
- * Contact Routes
- */
 app.use("/api/contact", contactRoute);
 
-/**
- * Actions Routes
- */
 app.use("/api/actions", actionsRoute);
 
-/**
- * Fav Routes
- */
 app.use("/api/favs", favRoute);
+
+app.use("/api/chat", chatRoute);
 
 module.exports = app;

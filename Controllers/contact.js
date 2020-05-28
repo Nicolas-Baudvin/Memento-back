@@ -1,5 +1,5 @@
-const { validationResult } = require("express-validator");
-const Sender = require("../Models/sender");
+const { validationResult } = require("express-validator"),
+    Sender = require("../Models/sender");
 
 exports.send = async (req, res) => {
     const { email, message, subject } = req.body;

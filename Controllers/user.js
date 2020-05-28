@@ -1,13 +1,13 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const mailer = require("nodemailer");
-const { validationResult } = require("express-validator");
+const bcrypt = require("bcrypt"),
+    jwt = require("jsonwebtoken"),
+    mailer = require("nodemailer"),
+    { validationResult } = require("express-validator");
 
 // Models
-const User = require("../Models/user");
-const Tab = require("../Models/tab");
-const List = require("../Models/list");
-const Task = require("../Models/task");
+const User = require("../Models/user"),
+    Tab = require("../Models/tab"),
+    List = require("../Models/list"),
+    Task = require("../Models/task");
 
 exports.signup = async (req, res) => {
     const { email, password, username } = req.body;
