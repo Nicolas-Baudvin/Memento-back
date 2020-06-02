@@ -28,6 +28,7 @@ exports.createTab = async (data, io, socket, roomCreated) => {
     roomCreated[cryptdRoom]._id = data.id;
     roomCreated[cryptdRoom].guests = [];
     roomCreated[cryptdRoom].tab = tab;
+    roomCreated[cryptdRoom].operators = {};
 
     socket.emit("confirm creation", roomCreated[cryptdRoom]);
 };

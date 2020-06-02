@@ -6,4 +6,4 @@ const FavSchema = mongoose.Schema({
 });
 
 
-module.exports = mongoose.model('Fav', FavSchema);
+module.exports = mongoose.model("Fav", FavSchema);

@@ -2,15 +2,15 @@ const Fav = require("../Models/fav"),
     Tab = require("../Models/tab");
 
 exports.newFav = async (req, res) => {
-    const { tabId, userID } = req.body;
+    const { tabId, userID, invitationLink, isInvited } = req.body;
 
     try {
         let favs = await Fav.findOne({ userID });
 
         if (!favs) {
-            favs = await new Fav({
+            favs = new Fav({
                 userID,
-                "favTabs": [tabId]
+                "favTabs": [{ tabId, invitationLink, isInvited }]
             });
 
             await favs.save();
@@ -18,7 +18,7 @@ exports.newFav = async (req, res) => {
             return res.status(201).json({ favs });
         }
 
-        favs.favTabs = [...favs.favTabs, tabId];
+        favs.favTabs = [...favs.favTabs, { tabId, invitationLink, isInvited }];
         await favs.save();
 
         return res.status(200).json({ favs });
@@ -71,15 +71,15 @@ exports.getFav = async (req, res) => {
 };
 
 exports.getFavTabs = async (req, res) => {
-    const { userID, favsId } = req.body;
+    const { userID, favsIds } = req.body;
     let tabs = [];
 
     try {
-        favsId.forEach(async (element, index) => {
-            const tab = await Tab.findOne({ "_id": element });
+        favsIds.forEach(async (element, index) => {
+            const tab = await Tab.findOne({ "_id": element.tabId });
 
             tabs = [...tabs, tab];
-            if (index === favsId.length - 1) {
+            if (index === favsIds.length - 1) {
                 console.log(tabs);
                 res.status(200).json({ tabs });
             }
