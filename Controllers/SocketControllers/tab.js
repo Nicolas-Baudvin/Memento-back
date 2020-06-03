@@ -22,13 +22,15 @@ exports.createTab = async (data, io, socket, roomCreated) => {
 
     socket.join(cryptdRoom);
 
-    roomCreated[cryptdRoom] = io.sockets.adapter.rooms[cryptdRoom];
-    roomCreated[cryptdRoom].owner = { "userID": data.userID, "username": data.username };
-    roomCreated[cryptdRoom].invitationLink = `${cryptdRoom}`;
-    roomCreated[cryptdRoom]._id = data.id;
-    roomCreated[cryptdRoom].guests = [];
-    roomCreated[cryptdRoom].tab = tab;
-    roomCreated[cryptdRoom].operators = {};
+    if (!roomCreated[cryptdRoom]) {
+        roomCreated[cryptdRoom] = io.sockets.adapter.rooms[cryptdRoom];
+        roomCreated[cryptdRoom].owner = { "userID": data.userID, "username": data.username, "isOnline": true };
+        roomCreated[cryptdRoom].invitationLink = `${cryptdRoom}`;
+        roomCreated[cryptdRoom]._id = data.id;
+        roomCreated[cryptdRoom].guests = [];
+        roomCreated[cryptdRoom].tab = tab;
+        roomCreated[cryptdRoom].operators = [];
+    }
 
     socket.emit("confirm creation", roomCreated[cryptdRoom]);
 };
@@ -49,7 +51,39 @@ exports.joinTab = async (data, io, socket, roomCreated) => {
     const cryptedLists = await cryptUserData(lists);
     const cryptedTasks = await cryptUserData(tasks);
 
-    roomCreated[link].guests = [...roomCreated[link].guests, { "userData": { ...userData, "socketId": socket.id } }];
+    const checkUserStatus = () => {
+        const guestUser = roomCreated[link].guests.filter((guest) => guest.userData.username === userData.username);
+        const operatorUser = roomCreated[link].operators.filter((guest) => guest.userData.username === userData.username);
+
+        return {
+            "isConnected": guestUser.length > 0 || operatorUser.length > 0,
+            "isOp": operatorUser.length > 0
+        };
+    };
+
+    if (!checkUserStatus().isConnected) {
+        roomCreated[link].guests = [...roomCreated[link].guests, { "userData": { ...userData, "socketId": socket.id }, "isOnline": true }];
+    } else {
+        const { isOp } = checkUserStatus();
+
+        if (isOp) {
+            roomCreated[link].operators = roomCreated[link].operators.map((op) => {
+                if (op.userData.username === userData.username) {
+                    op.isOnline = true;
+                    op.userData.socketId = socket.id;
+                }
+                return op;
+            });
+        } else {
+            roomCreated[link].guests = roomCreated[link].guests.map((guest) => {
+                if (guest.userData.username === userData.username) {
+                    guest.isOnline = true;
+                    guest.userData.socketId = socket.id;
+                }
+                return guest;
+            });
+        }
+    }
 
     socket.emit("tab joined", { "socket": roomCreated[link], "tabData": tab, "lists": cryptedLists, "tasks": cryptedTasks });
 
@@ -61,8 +95,8 @@ exports.leaveRoom = (room, io, socket, roomCreated) => {
     const { name, userData } = room;
 
     roomCreated[name].guests = roomCreated[name].guests.filter((guest) => guest.userData.userID !== userData.userID);
+    roomCreated[name].operators = roomCreated[name].operators.filter((guest) => guest.userData.userID !== userData.userID);
     io.to(name).emit("user leave", { "message": `${userData.username} a quitté votre instance`, userData, "socketId": socket.id, "currentSocket": roomCreated[name] });
-
     socket.leave(name);
     socket.disconnect();
 };
@@ -90,8 +124,9 @@ exports.sendMessage = async (data, io, socket) => {
     const { message, link } = data,
         { title, author, authorID, tabId } = message;
 
-    if (!title.length || title.length > 200)
+    if (!title.length || title.length > 200) {
         return socket.emit("send message failed", ("Le message doit faire obligatoirement entre 1 et 200 caractères"));
+    }
 
     const newMessage = new Message({
         title,
@@ -110,4 +145,23 @@ exports.sendMessage = async (data, io, socket) => {
     } catch (e) {
         return socket.emit("send message failed", { "errors": "Le message doit faire obligatoirement entre 1 et 200 caractères", e });
     }
+};
+
+exports.changeUserRole = (data, io, socket, roomCreated) => {
+    const { link, userData, isThisAPromotion } = data;
+
+    if (isThisAPromotion) {
+        const oldGuest = roomCreated[link].guests.filter((guest) => guest.userData.username === userData.username)[0];
+        const newGuestsArray = roomCreated[link].guests.filter((guest) => guest.userData.username !== userData.username);
+
+        roomCreated[link].operators.push({ "userData": { ...userData }, "isOnline": oldGuest.isOnline });
+        roomCreated[link].guests = newGuestsArray;
+    } else {
+        const oldOperator = roomCreated[link].operators.filter((op) => op.userData.username === userData.username)[0];
+        const newOperatorsArray = roomCreated[link].operators.filter((op) => op.userData.username !== userData.username);
+
+        roomCreated[link].guests.push({ "userData": { ...userData }, "isOnline": oldOperator.isOnline });
+        roomCreated[link].operators = newOperatorsArray;
+    }
+    return io.to(link).emit("change user role", roomCreated[link]);
 };

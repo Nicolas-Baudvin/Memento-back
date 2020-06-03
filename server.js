@@ -72,9 +72,19 @@ io.on("connection", (socket) => {
         const rooms = Object.keys(roomCreated);
 
         rooms.forEach((room) => {
-            if (roomCreated[room].guests) {
-                roomCreated[room].guests = roomCreated[room].guests.filter((x) => x.userData.socketId !== socket.id);
-            }
+
+            roomCreated[room].guests = roomCreated[room].guests.map((guest) => {
+                if (guest.userData.socketId === socket.id) {
+                    guest.isOnline = false;
+                }
+                return guest;
+            });
+            roomCreated[room].operators = roomCreated[room].operators.map((op) => {
+                if (op.userData.socketId === socket.id) {
+                    op.isOnline = false;
+                }
+                return op;
+            });
         });
 
         keys.forEach((key) => {
@@ -100,4 +110,6 @@ io.on("connection", (socket) => {
     socket.on("send tab", (tab) => SocketTabCtrl.sendTab(tab, io, socket, roomCreated));
 
     socket.on("send message", (message) => SocketTabCtrl.sendMessage(message, io, socket));
+
+    socket.on("change user role", (data) => SocketTabCtrl.changeUserRole(data, io, socket, roomCreated));
 });
