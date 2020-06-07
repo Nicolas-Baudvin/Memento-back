@@ -162,7 +162,7 @@ exports.updateUsername = async (req, res) => {
 };
 
 exports.updateEmail = async (req, res) => {
-    const { oldEmail, newEmail } = req.body;
+    const { oldEmail, newEmail, userID } = req.body;
     const errors = validationResult(req);
 
     // TODO: Créer adresse email + nom de domaine & envoyer confirmation avec NodeMailer
@@ -243,7 +243,7 @@ exports.forgotPassword = async (req, res) => {
         { "expiresIn": "1h" }
     );
 
-    const cleanToken = token.split('.').join('&');
+    const cleanToken = token.split('.').join('&'); // Problème avec React Router en laissant les points dans le token
 
     const recoveryLink = `http://localhost:3000/nouveau-mot-de-passe/${cleanToken}`;
 
@@ -297,9 +297,15 @@ exports.newPassword = async (req, res) => {
         const decoded = jwt.verify(token, process.env.EMAIL_TOKEN);
         const userID = decoded.userID;
 
+        const hash = await bcrypt.hash(pass, 10);
+        
         const user = await User.findOne({ "_id": userID });
 
-        await User.updateOne({ "_id": userID }, { "password": pass });
+        if (hash) {
+            await User.updateOne({ "_id": userID }, { "password": hash });
+        } else {
+            return res.status(500).json({ "errors": "Erreur serveur" });
+        }
 
         if (user.email !== decoded.email) {
             return res.status(403).json({ "errors": "Identité invalide" });
