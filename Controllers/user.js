@@ -297,7 +297,9 @@ exports.newPassword = async (req, res) => {
         const decoded = jwt.verify(token, process.env.EMAIL_TOKEN);
         const userID = decoded.userID;
 
-        const user = await User.updateOne({ "_id": userID }, { "password": pass });
+        const user = await User.findOne({ "_id": userID });
+
+        await User.updateOne({ "_id": userID }, { "password": pass });
 
         if (user.email !== decoded.email) {
             return res.status(403).json({ "errors": "Identité invalide" });
