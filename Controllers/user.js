@@ -11,6 +11,19 @@ const User = require("../Models/user"),
     List = require("../Models/list"),
     Task = require("../Models/task");
 
+const mailConfig = {
+    "host": "smtpout.Europe.secureServer.net",
+    "secureConnection": true,
+    "port": 465,
+    "tls": {
+        "ciphers": 'SSLv3'
+    },
+    "auth": {
+        "user": process.env.EMAIL_SMTP,
+        "pass": process.env.EMAIL_PASS
+    }
+};
+
 exports.signup = async (req, res) => {
     const { email, password, username } = req.body;
     const errors = validationResult(req);
@@ -234,19 +247,6 @@ exports.forgotPassword = async (req, res) => {
 
     const recoveryLink = `http://localhost:3000/nouveau-mot-de-passe/${cleanToken}`;
 
-    const mailConfig = {
-        "host": "smtpout.Europe.secureServer.net",
-        "secureConnection": true,
-        "port": 465,
-        "tls": {
-            "ciphers": 'SSLv3'
-        },
-        "auth": {
-            "user": process.env.EMAIL_SMTP,
-            "pass": process.env.EMAIL_PASS
-        }
-    };
-
     const smtpTransport = mailer.createTransport(mailConfig);
 
     const mailOptions = {
@@ -288,8 +288,7 @@ exports.newPassword = async (req, res) => {
         return res.status(401).json({ "notoken": true, "errors": "Identité non vérifiée." });
     }
 
-    if (!pass || !passConf || pass !== passConf)
-    {
+    if (!pass || !passConf || pass !== passConf) {
         return res.status(422).json({ "notoken": false, "errors": "Les mots de passe doivent êtres identiques et non vides." });
     }
 
@@ -298,9 +297,32 @@ exports.newPassword = async (req, res) => {
         const decoded = jwt.verify(token, process.env.EMAIL_TOKEN);
         const userID = decoded.userID;
 
-        await User.updateOne({ "_id": userID }, { "password": pass });
+        const user = await User.updateOne({ "_id": userID }, { "password": pass });
 
-        res.status(200).json({ "message": "Mot de passe modifié. vous pouvez désormais vous reconnecter." });
+        if (user.email !== decoded.email) {
+            return res.status(403).json({ "errors": "Identité invalide" });
+        }
+
+        const smtpTransport = mailer.createTransport(mailConfig);
+
+        const mailOptions = {
+            "from": mailConfig.auth.user,
+            "to": user.email,
+            "subject": "Confirmation changement de mot de passe",
+            "html": `<body>` +
+                `<h1>Bonjour ${user.username} !</h1>` +
+                `<p> Nous vous confirmons que votre mot de passe a bien été modifié ! </p>` +
+                `<footer>` +
+                `<p> Cet email est un message automatique envoyé par https://mymemento.fr, merci de ne pas y répondre. </p>` +
+                `</footer>` +
+                `</body>`
+        };
+
+        smtpTransport.sendMail(mailOptions, (err) => {
+            console.log(err);
+        });
+        
+        res.status(200).json({ "message": "Le mot de passe a bien été modifié." });
         
     } catch(e) {
         console.log(e);
