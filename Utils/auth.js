@@ -51,3 +51,10 @@ exports.password = [
 exports.forgotPassword = [
     check("email").isEmail().withMessage("L'email fourni est invalide")
 ];
+
+exports.newPassword = [
+    check("pass").notEmpty().withMessage("Les champs sont tous obligatoires"),
+    check("passConf").notEmpty().withMessage("Les champs sont tous obligatoires"),
+    check("pass").isLength({ "min": 6, "max": 30 }).withMessage("Les mots de passe doivent contenir entre 6 et 30 caractères"),
+    check("passConf").isLength({ "min": 6, "max": 30 }).withMessage("Les mots de passe doivent contenir entre 6 et 30 caractères")
+];

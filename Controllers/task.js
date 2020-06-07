@@ -4,10 +4,15 @@ const Task = require("../Models/task"),
 
 exports.find = async (req, res) => {
     const { tabId } = req.body;
+    
+    try {
+        const tasks = await Task.find({ tabId });
 
-    const tasks = await Task.find({ tabId });
+        res.status(200).json({ tasks });
+    } catch (e) {
+        console.log(e);
+    }
 
-    res.status(200).json({ tasks });
 };
 
 exports.create = async (req, res) => {

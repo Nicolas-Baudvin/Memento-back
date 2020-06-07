@@ -37,16 +37,15 @@ exports.deleteFav = async (req, res) => {
         const favs = await Fav.findOne({ userID });
 
         if (!favs) {
-            return res.status(404).json({ "fav": false });
+            return res.status(404);
         }
 
-        const newFavs = favs.favTabs.filter((fav) => fav !== tabId);
-
-        favs.favTabs = newFavs;
-
+        favs.favTabs = favs.favTabs.filter((fav) => fav.tabId !== tabId);
         await favs.save();
+    
+        const newFavs = await Fav.findOne({ userID });
 
-        res.status(200).json({ favs });
+        res.status(200).json({ "favs": newFavs });
     } catch (e) {
         console.log(e);
         res.status(500).json({ e, "errors": "Erreur Serveur" });

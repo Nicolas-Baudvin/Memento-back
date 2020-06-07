@@ -1,3 +1,5 @@
+/* eslint-disable operator-linebreak */
+/* eslint-disable quotes */
 const bcrypt = require("bcrypt"),
     jwt = require("jsonwebtoken"),
     mailer = require("nodemailer"),
@@ -209,9 +211,99 @@ exports.updatePassword = async (req, res) => {
 };
 
 exports.forgotPassword = async (req, res) => {
-    // TODO: Créer adresse email + nom de domaine & envoyer nouveau mot de passe avec NodeMailer
+    const { email } = req.body;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(422).json({ "errors": errors.array() });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        return res.status(404).json({ "errors": "Aucun compte n'est relié à cet email" });
+    }
+
+    const token = jwt.sign(
+        { "email": user.email, "userID": user._id, "username": user.username },
+        process.env.EMAIL_TOKEN,
+        { "expiresIn": "1h" }
+    );
+
+    const cleanToken = token.split('.').join('&');
+
+    const recoveryLink = `http://localhost:3000/nouveau-mot-de-passe/${cleanToken}`;
+
+    const mailConfig = {
+        "host": "smtpout.Europe.secureServer.net",
+        "secureConnection": true,
+        "port": 465,
+        "tls": {
+            "ciphers": 'SSLv3'
+        },
+        "auth": {
+            "user": process.env.EMAIL_SMTP,
+            "pass": process.env.EMAIL_PASS
+        }
+    };
+
+    const smtpTransport = mailer.createTransport(mailConfig);
+
+    const mailOptions = {
+        "from": mailConfig.auth.user,
+        "to": user.email,
+        "subject": "Récupération de mot de passe",
+        "html": `<body>` +
+            `<h1>Bonjour ${user.username} !</h1>` +
+            `<p> Vous avez fait une demande de récupération de mot de passe. Voici donc le lien de récupération ci-dessous </p>` +
+            `<p> Si cette demande n'est pas de vous, ignorez simplement ce mail. </p>` +
+            `<a href="${recoveryLink}" target="_blank">Liens de récupération </a>` +
+            `<footer>` +
+            `<p> Cet email est un message automatique envoyé par mymemento.fr, merci de ne pas y répondre. </p>` +
+            `</footer>` +
+            `</body>`
+    };
+
+    smtpTransport.sendMail(mailOptions, (err) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ "errors": "L'email n'a pas pu être envoyé." });
+        } else {
+            res.status(200).json({ "message": "L'email a bien été envoyé." });
+        }
+    });
+
 };
 
 exports.newPassword = async (req, res) => {
-    // TODO: Créer adresse email + nom de domaine & envoyer confirmation avec NodeMailer
+    const { pass, passConf } = req.body;
+    const token = req.headers.authorization.split(" ")[1];
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(422).json({ "errors": errors.array() });
+    }
+
+    if (!token) {
+        return res.status(401).json({ "notoken": true, "errors": "Identité non vérifiée." });
+    }
+
+    if (!pass || !passConf || pass !== passConf)
+    {
+        return res.status(422).json({ "notoken": false, "errors": "Les mots de passe doivent êtres identiques et non vides." });
+    }
+
+    try {
+
+        const decoded = jwt.verify(token, process.env.EMAIL_TOKEN);
+        const userID = decoded.userID;
+
+        await User.updateOne({ "_id": userID }, { "password": pass });
+
+        res.status(200).json({ "message": "Mot de passe modifié. vous pouvez désormais vous reconnecter." });
+        
+    } catch(e) {
+        console.log(e);
+        return res.status(401).json({ "errors": "Identité non vérifiée" });
+    }
 };

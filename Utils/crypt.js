@@ -28,3 +28,8 @@ exports.cryptUserData = (dataToEncrypt) => {
         resolve({ cryptedData });
     });
 };
+
+exports.cryptStringData = (string) => CryptoJS.AES.encrypt(string, process.env.SECRET_CRYPTO_KEY);
+
+
+exports.decryptStringData = (cryptedString) => JSON.parse(CryptoJS.AES.decrypt(cryptedString, process.env.SECRET_CRYPTO_KEY).toString(CryptoJS.enc.Utf8));

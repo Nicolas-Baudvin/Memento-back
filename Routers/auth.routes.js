@@ -15,6 +15,6 @@ router.post("/update-password/", [checker.password, authMw], authCtrl.updatePass
 router.post("/forgot-password/", [checker.forgotPassword], authCtrl.forgotPassword);
 router.get("/user/:id", authMw, authCtrl.getinfo);
 router.get("/new-email/:token", authCtrl.newEmail);
-router.get("/new-password/:token", authCtrl.newPassword);
+router.post("/new-password/", [checker.newPassword], authCtrl.newPassword); // nouveau mot de passe après oubli
 
 module.exports = router;
