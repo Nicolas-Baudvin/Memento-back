@@ -72,7 +72,7 @@ exports.getFav = async (req, res) => {
 exports.getFavTabs = async (req, res) => {
     const { userID, favsIds } = req.body;
     let tabs = [];
-    console.log("favoris", favsIds, favsIds.length === 0);
+
     if (favsIds.length === 0) {
         return res.status(200).json({ "tabs": false });
     }
