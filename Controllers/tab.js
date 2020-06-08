@@ -38,10 +38,10 @@ exports.create = async (req, res) => {
             const userTabs = await Tab.find({ "userID": userID });
 
             if (userTabs) {
-                return res.status(201).json({ "msg": "Votre table a été créé", "tabs": userTabs });
+                return res.status(201).json({ "msg": "Votre tableau a été créé", "tabs": userTabs });
             }
 
-            res.status(201).json({ "msg": "Votre table a été créé", "tab": { name, "created_at": current, imgPath } });
+            res.status(201).json({ "msg": "Votre tableau a été créé", "tab": { name, "created_at": current, imgPath } });
         })
         .catch((err) => {
             res.status(500).json({ err, "errors": "Une erreur est survenue sur le serveur, réessayez ou contacter un administrateur" });
@@ -61,7 +61,7 @@ exports.delete = async (req, res) => {
             const userTabs = await Tab.find({ "userID": userID });
 
             if (!userTabs) {
-                return res.status(404).json({ "errors": "Aucune table trouvée sur le serveur" });
+                return res.status(404).json({ "errors": "Aucun tableau trouvé sur le serveur" });
             }
 
             try {
@@ -69,13 +69,13 @@ exports.delete = async (req, res) => {
                 await List.deleteMany({ tabId });
                 await Task.deleteMany({ tabId });
                 await Action.deleteMany({ tabId });
-                res.status(200).json({ "msg": "La table a été supprimée", "tabs": userTabs });
+                res.status(200).json({ "msg": "Le tableau a été supprimé", "tabs": userTabs });
             } catch (e) {
                 res.status(500).json({ e, "errors": "Erreur serveur" });
             }
         })
         .catch((err) => {
-            res.status(404).json({ "errors": "La table est introuvable", err });
+            res.status(404).json({ "errors": "Le tableau est introuvable", err });
         });
 };
 
