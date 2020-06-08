@@ -72,15 +72,17 @@ exports.getFav = async (req, res) => {
 exports.getFavTabs = async (req, res) => {
     const { userID, favsIds } = req.body;
     let tabs = [];
-
+    console.log("favoris", favsIds, favsIds.length === 0);
+    if (favsIds.length === 0) {
+        return res.status(200).json({ "tabs": false });
+    }
     try {
         favsIds.forEach(async (element, index) => {
             const tab = await Tab.findOne({ "_id": element.tabId });
 
             tabs = [...tabs, tab];
             if (index === favsIds.length - 1) {
-                console.log(tabs);
-                res.status(200).json({ tabs });
+                return res.status(200).json({ tabs });
             }
         });
     } catch (e) {
