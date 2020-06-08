@@ -56,14 +56,14 @@ exports.signup = async (req, res) => {
 
             newUser.save()
                 .then(() => {
-                    return res.status(201).json({ "message": "Vous êtes désormais inscris ! Vous n'avez plus qu'à vous connecter en cliquant sur le bouton connexion au dessus du formulaire" });
+                    return res.status(201).json({ "message": "Vous êtes désormais inscrit ! Connectez vous sur la page de connexion" });
                 })
                 .catch((err) => {
-                    return res.status(500).json({ err, "errors": "Le serveur a rencontré un problème, réessayez ou contacter un administrateur" });
+                    return res.status(500).json({ err, "errors": "Le serveur a rencontré un problème, réessayez ou contactez un administrateur" });
                 });
         })
         .catch((err) => {
-            return res.status(500).json({ err, "errors": "Le serveur a rencontré un problème, réessayez ou contacter un administrateur" });
+            return res.status(500).json({ err, "errors": "Le serveur a rencontré un problème, réessayez ou contactez un administrateur" });
         });
 };
 
@@ -101,7 +101,7 @@ exports.login = async (req, res) => {
                 "username": user.username,
                 "userID": user._id,
                 token,
-                "message": "Vous êtes désormais connecté"
+                "message": "Vous êtes désormais connectés"
             });
         });
     } else {
@@ -143,24 +143,29 @@ exports.updateUsername = async (req, res) => {
     const { username, userID } = req.body;
     const errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-        return res.status(422).json({ "errors": errors.array() });
+    try {
+
+        if (!errors.isEmpty()) {
+            return res.status(422).json({ "errors": errors.array() });
+        }
+        
+        const user = await User.updateOne({ "_id": userID }, { "username": username });
+        
+        if (!user.n) {
+            return res.status(404).json({ "errors": "Une erreur est survenue. Réessayez ou contacter l'administrateur" });
+        }
+        if (!user.nModified) {
+            return res.status(400).json({ "errors": "Ce pseudo est déjà le vôtre ! " });
+        }
+        
+        const currentUser = await User.findOne({ "_id": userID });
+        
+        currentUser.password = undefined;
+        return res.status(200).json({ "message": `Votre pseudo a bien été modifié. Vous répondrez désormais sous le nom de ${username}`, "userData": currentUser });
+    } catch (e) {
+        console.log(e);
+        res.status(422).json({ "errors": "Ce pseudo est déjà utilisé" });
     }
-
-    const user = await User.updateOne({ "_id": userID }, { "username": username });
-
-    if (!user.n) {
-        return res.status(404).json({ "errors": "Une erreur est survenue. Réessayez ou contacter l'administrateur" });
-    }
-    if (!user.nModified) {
-        return res.status(400).json({ "errors": "Ce pseudo est déjà le vôtre ! " });
-    }
-
-    const currentUser = await User.findOne({ "_id": userID });
-
-    currentUser.password = undefined;
-
-    return res.status(200).json({ "message": `Votre pseudo a bien été modifié. Vous répondrez désormais sous le nom de ${username}`, "userData": currentUser });
 
 };
 
