@@ -31,5 +31,18 @@ exports.cryptUserData = (dataToEncrypt) => {
 
 exports.cryptStringData = (string) => CryptoJS.AES.encrypt(string, process.env.SECRET_CRYPTO_KEY);
 
-
 exports.decryptStringData = (cryptedString) => JSON.parse(CryptoJS.AES.decrypt(cryptedString, process.env.SECRET_CRYPTO_KEY).toString(CryptoJS.enc.Utf8));
+
+exports.encodeString = (string) => {
+    const encodedString = CryptoJS.enc.Utf8.parse(string);
+    const encoded = CryptoJS.enc.Base64.stringify(encodedString);
+
+    return encoded;
+};
+
+exports.decodeString = (encodedString) => {
+    const encoded = CryptoJS.enc.Base64.parse(encodedString);
+    const decoded = CryptoJS.enc.Utf8.stringify(encoded);
+
+    return decoded;
+};

@@ -2,6 +2,7 @@
 /* eslint-disable quotes */
 const bcrypt = require("bcrypt"),
     jwt = require("jsonwebtoken"),
+    { encodeString, decodeString } = require("../Utils/crypt"),
     mailer = require("nodemailer"),
     { validationResult } = require("express-validator");
 
@@ -9,7 +10,8 @@ const bcrypt = require("bcrypt"),
 const User = require("../Models/user"),
     Tab = require("../Models/tab"),
     List = require("../Models/list"),
-    Task = require("../Models/task");
+    Task = require("../Models/task"),
+    Fav = require("../Models/fav");
 
 const mailConfig = {
     "host": "smtpout.Europe.secureServer.net",
@@ -23,6 +25,8 @@ const mailConfig = {
         "pass": process.env.EMAIL_PASS
     }
 };
+
+const userChangeMailPending = {};
 
 exports.signup = async (req, res) => {
     const { email, password, username } = req.body;
@@ -109,19 +113,18 @@ exports.login = async (req, res) => {
 exports.delete = async (req, res) => {
     const { userID } = req.body;
 
-    User.deleteOne({ "_id": userID })
-        .then(async () => {
-            await Tab.deleteMany({ "userID": userID });
-            await List.deleteMany({ "userID": userID });
-            await Task.deleteMany({ "userID": userID });
+    try {
 
-            res.status(200).json({ "errors": "Votre compte a bien été supprimé" });
-        })
-        .catch((err) => {
-            console.log(err);
-            res.status(400).json({ "errors": "Une erreur sur le serveur est survenue, réessayez ou contacter l'administrateur" });
-        });
-
+        await User.deleteOne({ "_id": userID })
+        await Tab.deleteMany({ "userID": userID });
+        await List.deleteMany({ "userID": userID });
+        await Task.deleteMany({ "userID": userID });
+        await Fav.deleteOne({ userID });
+        res.status(200).json({ "message": "Votre compte a bien été supprimé" });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ "errors": "Une erreur sur le serveur est survenue, réessayez ou contacter l'administrateur" });
+    }
 };
 
 exports.getinfo = async (req, res) => {
@@ -165,19 +168,85 @@ exports.updateEmail = async (req, res) => {
     const { oldEmail, newEmail, userID } = req.body;
     const errors = validationResult(req);
 
-    // TODO: Créer adresse email + nom de domaine & envoyer confirmation avec NodeMailer
+    try {
 
-    if (!errors.isEmpty()) {
-        return res.status(422).json({ "errors": errors.array() });
+        if (!errors.isEmpty()) {
+            return res.status(422).json({ "errors": errors.array() });
+        }
+
+        const user = await User.findOne({ "email": oldEmail, "_id": userID });
+
+        if (!user) {
+            return res.status(404).json({ "errors": "L'email spécifié n'est rattaché à aucun compte." });
+        }
+
+        const mails = `${user.email} ${newEmail} ${userID}`;
+
+        const encodedMails = encodeString(mails);
+
+        const changeMailLink = `https://mymemento.fr/confirmation-mail-changement/${encodedMails}`; // TODO: Valeur prod à mettre
+
+        const mailOptions = {
+            "from": mailConfig.auth.user,
+            "to": user.email,
+            "subject": "Récupération de mot de passe",
+            "html": `<body>` +
+                `<h1>Bonjour ${user.username} !</h1>` +
+                `<p> Vous avez fait une demande de changement d'email. Pour confirmer le changement, cliquez sur le lien ci-dessous </p>` +
+                `<p> Si cette demande n'est pas de vous, ignorez simplement ce mail. </p>` +
+                `<a href="${changeMailLink}" target="_blank">Je confirme mon changement de mail</a>` +
+                `<footer>` +
+                `<p> Cet email est un message automatique envoyé par mymemento.fr, merci de ne pas y répondre. </p>` +
+                `</footer>` +
+                `</body>`
+        };
+
+        const smtpTransport = mailer.createTransport(mailConfig);
+
+        smtpTransport.sendMail(mailOptions, (err) => {
+            if (err) {
+                console.log(err);
+                res.status(500).json({ "errors": "Echec de l'envoie de l'email." });
+            } else {
+                userChangeMailPending[userID] = { oldEmail, newEmail };
+                res.status(200).json({ "message": "Un email vous a été envoyé sur votre ancienne addresse pour confirmation." });
+            }
+        });
+    } catch(e) {
+        console.log(e);
+        res.status(500).json({ "errors": "Une erreur est survenue." });
     }
-
-    res.status(200).json({ "message": "Ce service est indisponible pour le moment." });
-
 };
 
 exports.newEmail = async (req, res) => {
+    const { emails, userID } = req.body;
+    const emailsArray = decodeString(emails).split(' ');
 
-    // TODO: Confirmation du changement d'email
+    const oldEmail = emailsArray[0];
+    const newEmail = emailsArray[1];
+    const userIDorigin = emailsArray[2];
+    
+    console.log("emails décryptés", oldEmail, newEmail, userIDorigin);
+    try {
+
+        const user = await User.findOne({ "email": oldEmail, "_id": userIDorigin });
+
+        if (!user) {
+            return res.status(404).json({ "errors": "Aucun compte n'est lié à cet email" });
+        }
+        if (!userChangeMailPending[userID]) {
+            return res.status(404).json({ "errors": "Aucune demande de changement de mail n'a été effectué par ce compte." });
+        }
+        user.email = newEmail;
+        await user.save();
+
+        delete userChangeMailPending[userID];
+        res.status(200).json({ "message": "L'email a bien été modifié" });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ "errors": "Une erreur est survenue, réessayez ou contactez un admin" });
+    }
+
 
 };
 
@@ -245,7 +314,7 @@ exports.forgotPassword = async (req, res) => {
 
     const cleanToken = token.split('.').join('&'); // Problème avec React Router en laissant les points dans le token
 
-    const recoveryLink = `http://localhost:3000/nouveau-mot-de-passe/${cleanToken}`;
+    const recoveryLink = `https://mymemento.fr/nouveau-mot-de-passe/${cleanToken}`;
 
     const smtpTransport = mailer.createTransport(mailConfig);
 
@@ -298,7 +367,7 @@ exports.newPassword = async (req, res) => {
         const userID = decoded.userID;
 
         const hash = await bcrypt.hash(pass, 10);
-        
+
         const user = await User.findOne({ "_id": userID });
 
         if (hash) {
@@ -329,10 +398,10 @@ exports.newPassword = async (req, res) => {
         smtpTransport.sendMail(mailOptions, (err) => {
             console.log(err);
         });
-        
+
         res.status(200).json({ "message": "Le mot de passe a bien été modifié." });
-        
-    } catch(e) {
+
+    } catch (e) {
         console.log(e);
         return res.status(401).json({ "errors": "Identité non vérifiée" });
     }
