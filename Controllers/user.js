@@ -236,9 +236,9 @@ exports.newEmail = async (req, res) => {
     const { emails, userID } = req.body;
     const emailsArray = decodeString(emails).split(' ');
 
-    const oldEmail = emailsArray[0];
-    const newEmail = emailsArray[1];
-    const userIDorigin = emailsArray[2];
+    const oldEmail = emailsArray[0].trim();
+    const newEmail = emailsArray[1].trim();
+    const userIDorigin = emailsArray[2].trim();
     
     console.log("emails décryptés", oldEmail, newEmail, userIDorigin);
     try {
