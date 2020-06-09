@@ -7,7 +7,7 @@ exports.create = [
 
 exports.updateName = [
     check("title").notEmpty().withMessage("Le nom ne peut pas être vide"),
-    check("title").isLength({ "min": 1, "max": 25 })
+    check("title").isLength({ "min": 1, "max": 200 }).withMessage("Une tâche peut contenir entre 1 et 200 caractères")
 ];
 
 exports.updateLabel = [

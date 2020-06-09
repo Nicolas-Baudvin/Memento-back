@@ -6,11 +6,11 @@ exports.create = [
 ];
 
 exports.find = [
-    check("id").notEmpty().withMessage("Cette table est introuvable.")
+    check("id").notEmpty().withMessage("Tableau introuvable.")
 ];
 
 exports.delete = [
-    check("tabId").notEmpty().withMessage("Cette table est introuvable.")
+    check("tabId").notEmpty().withMessage("Tableau introuvable.")
 ];
 
 exports.updateName = [
