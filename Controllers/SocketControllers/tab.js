@@ -102,12 +102,16 @@ exports.leaveRoom = (room, io, socket, roomCreated) => {
 };
 
 exports.sendLists = (lists, io, socket, roomCreated) => {
-    roomCreated[lists[1]].lists = lists[0];
+    if (roomCreated[lists[1]]) {
+        roomCreated[lists[1]].lists = lists[0];
+    }
     io.to(lists[1]).emit("send owner lists", roomCreated[lists[1]]);
 };
 
 exports.sendTasks = (tasks, io, socket, roomCreated) => {
-    roomCreated[tasks[1]].tasks = tasks[0];
+    if (roomCreated[tasks[1]]) {
+        roomCreated[tasks[1]].tasks = tasks[0];
+    }
     io.to(tasks[1]).emit("send owner tasks", roomCreated[tasks[1]]);
 };
 
@@ -116,7 +120,9 @@ exports.sendActions = (actions, io, socket, roomCreated) => {
 };
 
 exports.sendTab = (tab, io, socket, roomCreated) => {
-    roomCreated[tab[1]].tab = tab[0];
+    if (roomCreated[tab[1]]) {
+        roomCreated[tab[1]].tab = tab[0];
+    }
     io.to(tab[1]).emit("tab updated", { "tab": tab[0], "currentSocket": roomCreated[tab[1]] });
 };
 
