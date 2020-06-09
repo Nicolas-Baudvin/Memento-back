@@ -2,7 +2,8 @@ const { validationResult } = require("express-validator"),
     Tab = require("../Models/tab"),
     List = require("../Models/list"),
     Task = require("../Models/task"),
-    Action = require("../Models/actions");
+    Action = require("../Models/actions"),
+    Message = require("../Models/message");
 
 exports.find = async (req, res) => {
     const { id } = req.params;
@@ -69,6 +70,7 @@ exports.delete = async (req, res) => {
                 await List.deleteMany({ tabId });
                 await Task.deleteMany({ tabId });
                 await Action.deleteMany({ tabId });
+                await Message.deleteMany({ tabId });
                 res.status(200).json({ "msg": "Le tableau a été supprimé", "tabs": userTabs });
             } catch (e) {
                 res.status(500).json({ e, "errors": "Erreur serveur" });

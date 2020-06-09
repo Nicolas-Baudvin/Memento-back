@@ -123,19 +123,25 @@ exports.delete = async (req, res) => {
         res.status(200).json({ "message": "Votre compte a bien été supprimé" });
     } catch (e) {
         console.log(e);
-        res.status(500).json({ "errors": "Une erreur sur le serveur est survenue, réessayez ou contacter l'administrateur" });
+        res.status(500).json({ "errors": "Une erreur sur le serveur est survenue, réessayez ou contactez l'administrateur" });
     }
 };
 
 exports.getinfo = async (req, res) => {
     const { id } = req.params;
-    const user = await User.findOne({ "_id": id });
 
-    if (!user) {
-        return res.status(401).json({ "errors": "Vous n'êtes pas autorisés à utiliser cette fonctionnalité" });
+    try {
+
+        const user = await User.findOne({ "_id": id });
+        
+        if (!user) {
+            return res.status(401).json({ "errors": "Vous n'êtes pas autorisés à utiliser cette fonctionnalité" });
+        }
+        
+        res.status(200).json({ "userID": user._id, "username": user.username, "email": user.email });
+    } catch (e) {
+        res.status(500).json({ "errors": "Erreur interne" });
     }
-
-    res.status(200).json({ "userID": user._id, "username": user.username, "email": user.email });
 
 };
 
@@ -152,7 +158,7 @@ exports.updateUsername = async (req, res) => {
         const user = await User.updateOne({ "_id": userID }, { "username": username });
         
         if (!user.n) {
-            return res.status(404).json({ "errors": "Une erreur est survenue. Réessayez ou contacter l'administrateur" });
+            return res.status(404).json({ "errors": "Pseudo introuvable" });
         }
         if (!user.nModified) {
             return res.status(400).json({ "errors": "Ce pseudo est déjà le vôtre ! " });
@@ -164,7 +170,10 @@ exports.updateUsername = async (req, res) => {
         return res.status(200).json({ "message": `Votre pseudo a bien été modifié. Vous répondrez désormais sous le nom de ${username}`, "userData": currentUser });
     } catch (e) {
         console.log(e);
-        res.status(422).json({ "errors": "Ce pseudo est déjà utilisé" });
+        if (e.code === 11000) {
+            return res.status(422).json({ "errors": "Ce pseudo est déjà utilisé" });
+        }
+        return res.status(500).json({ "errors": "Erreur interne, contactez un administrateur" });
     }
 
 };
