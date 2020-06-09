@@ -17,7 +17,7 @@ module.exports = (req, res, next) => {
         }
     } catch (err) {
         res.status(401).json({
-            "errors": "Vous n'avez pas le droit d'accéder à cette url."
+            "errors": "Votre session a expiré. Veuillez vous reconnecter"
         });
     }
 };
