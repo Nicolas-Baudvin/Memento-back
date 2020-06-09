@@ -55,12 +55,26 @@ exports.delete = async (req, res) => {
     try {
         const task = await Task.findOne({ "_id": taskId });
         const listId = task.listId;
-        const deleted = await Task.deleteOne({ "_id": taskId });
 
-        if (deleted.ok) {
+        await Task.deleteOne({ "_id": taskId });
+
+        const tasksByListId = await Task.find({ listId });
+
+        if (tasksByListId.length) {
+            tasksByListId.forEach(async(item, index) => {
+                if (item.order > task.order) {
+                    await Task.updateOne({ "_id": item._id }, { "order": item.order - 1 });
+                }
+                if (index === tasksByListId.length - 1) {
+                    const tasks = await Task.find({ tabId });
+
+                    return res.status(200).json({ tasks });
+                }
+            });
+        } else {
             const tasks = await Task.find({ tabId });
-
-            res.status(200).json({ tasks });
+            
+            return res.status(200).json({ tasks });
         }
     } catch (err) {
         console.log(err);

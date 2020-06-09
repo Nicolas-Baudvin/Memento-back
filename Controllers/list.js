@@ -45,14 +45,30 @@ exports.create = (req, res) => {
 exports.delete = async (req, res) => {
     const { userID, listID, tabId } = req.body;
 
-    console.log(listID, tabId);
     try {
+        const listToDelete = await List.findOne({ "_id": listID });
+
         await List.deleteOne({ "_id": listID });
         await Task.deleteMany({ "listId": listID });
 
         const lists = await List.find({ "tabId": tabId });
 
-        res.status(200).json({ lists });
+        if (lists.length) {
+            lists.forEach(async (item, index) => {
+                console.log(item.order > listToDelete.order, item.order, listToDelete.order);
+                if (item.order > listToDelete.order) {
+                    await List.updateOne({ "_id": item._id }, { "order": item.order - 1 });
+                }
+                if (index === lists.length - 1) {
+                    const updatedLists = await List.find({ "tabId": tabId });
+
+                    return res.status(200).json({ "lists": updatedLists });
+                }
+            });
+        }
+        else {
+            return res.status(200).json({ lists });
+        }
     } catch (err) {
         console.log(err);
         res.status(404).json({ "errors": "Liste introuvable", err });
