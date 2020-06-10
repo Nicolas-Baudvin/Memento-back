@@ -11,7 +11,8 @@ const User = require("../Models/user"),
     Tab = require("../Models/tab"),
     List = require("../Models/list"),
     Task = require("../Models/task"),
-    Fav = require("../Models/fav");
+    Fav = require("../Models/fav"),
+    Actions = require("../Models/actions");
 
 const mailConfig = {
     "host": "smtpout.Europe.secureServer.net",
@@ -114,13 +115,29 @@ exports.delete = async (req, res) => {
     const { userID } = req.body;
 
     try {
+        const tabs = await Tab.find({ userID });
 
-        await User.deleteOne({ "_id": userID })
-        await Tab.deleteMany({ "userID": userID });
-        await List.deleteMany({ "userID": userID });
-        await Task.deleteMany({ "userID": userID });
-        await Fav.deleteOne({ userID });
-        res.status(200).json({ "message": "Votre compte a bien été supprimé" });
+        if (tabs.length) {
+
+            tabs.forEach(async (tab, index) => {
+                await Actions.deleteMany({ "tabId": tab._id });
+                if (index === tabs.length - 1) {
+                    await User.deleteOne({ "_id": userID });
+                    await Tab.deleteMany({ "userID": userID });
+                    await List.deleteMany({ "userID": userID });
+                    await Task.deleteMany({ "userID": userID });
+                    await Fav.deleteOne({ userID });
+                    return res.status(200).json({ "message": "Votre compte a bien été supprimé" });
+                }
+            });
+        } else {
+            await User.deleteOne({ "_id": userID });
+            await Tab.deleteMany({ "userID": userID });
+            await List.deleteMany({ "userID": userID });
+            await Task.deleteMany({ "userID": userID });
+            await Fav.deleteOne({ userID });
+            return res.status(200).json({ "message": "Votre compte a bien été supprimé" });
+        }
     } catch (e) {
         console.log(e);
         res.status(500).json({ "errors": "Une erreur sur le serveur est survenue, réessayez ou contactez l'administrateur" });
