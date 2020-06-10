@@ -65,8 +65,7 @@ exports.delete = async (req, res) => {
                     return res.status(200).json({ "lists": updatedLists });
                 }
             });
-        }
-        else {
+        } else {
             return res.status(200).json({ lists });
         }
     } catch (err) {
