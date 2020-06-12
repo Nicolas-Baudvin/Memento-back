@@ -81,13 +81,9 @@ exports.delete = async (req, res) => {
         });
 };
 
-
-// TODO: Fusionner les deux controlleurs
-
 exports.updateName = async (req, res) => {
-    const { name, tabId, userID } = req.body;
+    const { name, tabId } = req.body;
 
-    console.log(tabId);
     try {
         await Tab.updateOne({ "_id": tabId }, { name });
         const tab = await Tab.findOne({ "_id": tabId });
@@ -100,8 +96,7 @@ exports.updateName = async (req, res) => {
 };
 
 exports.updatePic = async(req, res) => {
-    const { imgPath, tabId, userID } = req.body;
-    
+    const { imgPath, tabId } = req.body;
 
     try {
         await Tab.updateOne({ "_id": tabId }, { imgPath });
@@ -111,5 +106,52 @@ exports.updatePic = async(req, res) => {
         res.status(200).json({ tab });
     } catch (e) {
         res.status(500).json({ e, "errors": "Erreur serveur" });
+    }
+};
+
+exports.publicTab = async (req, res) => {
+    const { tabId } = req.body;
+
+    try {
+        const tab = await Tab.findOne({ "_id": tabId });
+
+        if (!tab.isPublic) {
+            return res.status(403).json({ "errors": "Cette table n'est pas publique" });
+        }
+
+        if (!tab) {
+            return res.status(204).json({ "tab": false });
+        }
+
+        const lists = await List.find({ "tabId": tab._id });
+
+        if (!lists) {
+            return res.status(200).json({ tab, "lists": [], "tasks": [] });
+        }
+        const tasks = await Task.find({ "tabId": tab._id });
+
+        if (!tasks) {
+            return res.status(200).json({ tab, lists, "tasks": [] });
+        }
+        return res.status(200).json({ tab, lists, tasks });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ "errors": "Erreur interne. Contactez un administrateur" });
+    }
+};
+
+exports.changeTabStatus = async (req, res) => {
+    const { tabId, isPublic } = req.body;
+
+    try {
+        await Tab.updateOne({ "_id": tabId }, { "isPublic": isPublic });
+        const tab = await Tab.findOne({ "_id": tabId });
+        
+        if (!tab) {
+            res.status(404).json({ "errors": "Aucune table trouvée" });
+        }
+        return res.status(200).json({ tab });
+    } catch (e) {
+        return res.status(500).json({ "errors": "Erreur interne. Contactez un administrateur" });
     }
 };
