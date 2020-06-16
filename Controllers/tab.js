@@ -17,7 +17,7 @@ exports.find = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-    const { userID, name, imgPath } = req.body;
+    const { userID, name, imgPath, owner } = req.body;
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -25,12 +25,13 @@ exports.create = async (req, res) => {
     }
 
     const date = new Date();
-    const current = `créer le ${date.getDay()} ${date.getMonth()} ${date.getFullYear()} à ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+    const current = `${date.getDay()} ${date.getMonth()} ${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
 
     const newTab = new Tab({
         "name": name,
         "userID": userID,
         "created_at": current,
+        owner,
         imgPath
     });
 
