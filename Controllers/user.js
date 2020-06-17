@@ -28,6 +28,7 @@ const mailConfig = {
 };
 
 const userChangeMailPending = {};
+const userChangePassPending = {};
 
 exports.signup = async (req, res) => {
     const { email, password, username } = req.body;
@@ -372,6 +373,10 @@ exports.forgotPassword = async (req, res) => {
             console.log(err);
             res.status(500).json({ "errors": "L'email n'a pas pu être envoyé." });
         } else {
+            userChangePassPending[user._id] = user;
+            setTimeout(() => {
+                delete userChangePassPending[user._id];
+            }, 3600);
             res.status(200).json({ "message": "L'email a bien été envoyé." });
         }
     });
