@@ -240,6 +240,9 @@ exports.updateEmail = async (req, res) => {
                 res.status(500).json({ "errors": "Echec de l'envoie de l'email." });
             } else {
                 userChangeMailPending[userID] = { oldEmail, newEmail };
+                setTimeout(() => {
+                    delete userChangeMailPending[userID];
+                }, 3600);
                 res.status(200).json({ "message": "Un email vous a été envoyé sur votre ancienne addresse pour confirmation." });
             }
         });
