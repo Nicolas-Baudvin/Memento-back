@@ -8,13 +8,13 @@ const router = express.Router();
 
 router.post("/signup/", checker.signup, authCtrl.signup);
 router.post("/login/", checker.login, authCtrl.login);
-router.post("/delete/", [checker.delete, authMw], authCtrl.delete);
-router.post("/update-username/", [checker.username, authMw], authCtrl.updateUsername);
-router.post("/update-email/", [checker.email, authMw], authCtrl.updateEmail);
-router.post("/update-password/", [checker.password, authMw], authCtrl.updatePassword);
+router.delete("/delete/", [checker.delete, authMw], authCtrl.delete);
+router.patch("/update-username/", [checker.username, authMw], authCtrl.updateUsername);
+router.patch("/update-email/", [checker.email, authMw], authCtrl.updateEmail);
+router.patch("/update-password/", [checker.password, authMw], authCtrl.updatePassword);
 router.post("/forgot-password/", [checker.forgotPassword], authCtrl.forgotPassword);
 router.get("/user/:id", authMw, authCtrl.getinfo);
-router.post("/new-email/", authMw, authCtrl.newEmail);
-router.post("/new-password/", [checker.newPassword], authCtrl.newPassword); // nouveau mot de passe après oubli
+router.patch("/new-email/", authMw, authCtrl.newEmail);
+router.patch("/new-password/", [checker.newPassword], authCtrl.newPassword); // nouveau mot de passe après oubli
 
 module.exports = router;

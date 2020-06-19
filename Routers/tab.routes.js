@@ -7,10 +7,10 @@ const router = express.Router();
 
 router.get("/:id", auth, TabCtrl.find);
 router.post("/create/", [checker.create, auth], TabCtrl.create);
-router.post("/update-name/", [checker.updateName, auth], TabCtrl.updateName);
-router.post("/update-pic/", [checker.updatePic, auth], TabCtrl.updatePic);
-router.post("/delete/", [auth, checker.delete], TabCtrl.delete);
+router.patch("/update-name/", [checker.updateName, auth], TabCtrl.updateName);
+router.patch("/update-pic/", [checker.updatePic, auth], TabCtrl.updatePic);
+router.delete("/delete/", [auth, checker.delete], TabCtrl.delete);
 router.post("/public-tab/", TabCtrl.publicTab);
-router.post("/change-status/", TabCtrl.changeTabStatus);
+router.patch("/change-status/", auth, TabCtrl.changeTabStatus);
 
 module.exports = router;

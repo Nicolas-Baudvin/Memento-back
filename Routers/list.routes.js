@@ -7,8 +7,8 @@ const router = express.Router();
 
 router.post("/find/", [authMw, checker.find], listCtrl.find);
 router.post("/create/", [authMw, checker.create], listCtrl.create);
-router.post("/update", [authMw, checker.update], listCtrl.update);
-router.post("/delete/", [authMw, checker.delete], listCtrl.delete);
-router.post("/update-order/", [authMw], listCtrl.updateOrder);
+router.patch("/update", [authMw, checker.update], listCtrl.update);
+router.delete("/delete/", [authMw, checker.delete], listCtrl.delete);
+router.patch("/update-order/", [authMw], listCtrl.updateOrder);
 
 module.exports = router;
