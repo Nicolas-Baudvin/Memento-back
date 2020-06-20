@@ -17,22 +17,19 @@ exports.find = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-    const { userID, name, imgPath, owner } = req.body;
+    const { userID, name, imgPath, owner, resizedImgPath } = req.body;
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
         return res.status(422).json({ "errors": errors.array() });
     }
 
-    const date = new Date();
-    const current = `${date.getDay()} ${date.getMonth()} ${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-
     const newTab = new Tab({
         "name": name,
         "userID": userID,
-        "created_at": current,
         owner,
-        imgPath
+        imgPath,
+        resizedImgPath
     });
 
     newTab.save()
