@@ -7,10 +7,10 @@ const router = express.Router();
 
 router.post("/find/", authMw, taskCtrl.find);
 router.post("/create/", [checker.create, authMw], taskCtrl.create);
-router.post("/update-name/", [checker.updateName, authMw], taskCtrl.updateName);
-router.post("/update-label/", [checker.updateLabel, authMw], taskCtrl.updateLabel);
-router.post("/update-order/", [checker.updateOrder, authMw], taskCtrl.updateOrder);
-router.post("/assign-task/", [checker.assignTask, authMw], taskCtrl.updateAssign);
-router.post("/delete/", authMw, taskCtrl.delete);
+router.patch("/update-name/", [checker.updateName, authMw], taskCtrl.updateName);
+router.patch("/update-label/", [checker.updateLabel, authMw], taskCtrl.updateLabel);
+router.patch("/update-order/", [checker.updateOrder, authMw], taskCtrl.updateOrder);
+router.put("/assign-task/", [checker.assignTask, authMw], taskCtrl.updateAssign);
+router.delete("/delete/", authMw, taskCtrl.delete);
 
 module.exports = router;

@@ -11,6 +11,6 @@ router.patch("/update-name/", [checker.updateName, auth], TabCtrl.updateName);
 router.patch("/update-pic/", [checker.updatePic, auth], TabCtrl.updatePic);
 router.delete("/delete/", [auth, checker.delete], TabCtrl.delete);
 router.post("/public-tab/", TabCtrl.publicTab);
-router.patch("/change-status/", TabCtrl.changeTabStatus);
+router.patch("/change-status/", auth, TabCtrl.changeTabStatus);
 
 module.exports = router;
