@@ -13,7 +13,6 @@ router.patch("/update-username/", [checker.username, authMw], authCtrl.updateUse
 router.patch("/update-email/", [checker.email, authMw], authCtrl.updateEmail);
 router.patch("/update-password/", [checker.password, authMw], authCtrl.updatePassword);
 router.post("/forgot-password/", [checker.forgotPassword], authCtrl.forgotPassword);
-router.get("/user/:id", authMw, authCtrl.getinfo);
 router.patch("/new-email/", authMw, authCtrl.newEmail);
 router.patch("/new-password/", [checker.newPassword], authCtrl.newPassword); // nouveau mot de passe après oubli
 
