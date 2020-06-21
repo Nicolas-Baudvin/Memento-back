@@ -1,5 +1,4 @@
 const Task = require("../Models/task"),
-    List = require("../Models/list"),
     { validationResult } = require("express-validator");
 
 exports.find = async (req, res) => {

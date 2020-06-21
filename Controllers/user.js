@@ -76,40 +76,41 @@ exports.login = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(422).json({ "errors": errors.array() });
     }
+    try {
+        const user = await User.findOne({ email });
 
-    const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ "errors": "Les identifiants sont incorrects" });
+        }
+        const valid = await bcrypt.compare(password, user.password);
 
-    if (user) {
-        bcrypt.compare(password, user.password, (err, valid) => {
-            if (err) {
-                return res.status(500).json({ err, "errors": "Le serveur a rencontré un problème, réessayez ou contacter un administrateur" });
-            }
-
-            if (!valid) {
-                return res.status(401).json({ "errors": "Les identifiants sont incorrects" });
-            }
-
-            const token = jwt.sign(
-                {
-                    "userID": user._id,
-                    "email": user.email
-                },
-                process.env.SECRET_TOKEN_KEY,
-                { "expiresIn": "2h" }
-            );
-
-            return res.status(200).json({
-                "email": user.email,
-                "username": user.username,
+        if (!valid) {
+            return res.status(401).json({ "errors": "Les identifiants sont incorrects" });
+        }
+        const token = jwt.sign(
+            {
                 "userID": user._id,
-                token,
-                "message": "Vous êtes désormais connectés"
-            });
-        });
-    } else {
-        return res.status(401).json({ "errors": "Les identifiants sont incorrects" });
-    }
+                "email": user.email
+            },
+            process.env.SECRET_TOKEN_KEY,
+            { "expiresIn": "2h" }
+        );
 
+        return res.status(200).json({
+            "email": user.email,
+            "username": user.username,
+            "userID": user._id,
+            token,
+            "message": "Vous êtes désormais connectés"
+        });
+
+    } catch (err) {
+        console.log(err);
+        if (err.response.status === 401) {
+            return res.status(401).json({ "errors": "Les identifiants sont incorrects", err });
+        }
+        return res.status(500).json({ err });
+    }
 };
 
 exports.delete = async (req, res) => {
@@ -145,24 +146,6 @@ exports.delete = async (req, res) => {
     }
 };
 
-exports.getinfo = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-
-        const user = await User.findOne({ "_id": id });
-        
-        if (!user) {
-            return res.status(401).json({ "errors": "Vous n'êtes pas autorisés à utiliser cette fonctionnalité" });
-        }
-        
-        res.status(200).json({ "userID": user._id, "username": user.username, "email": user.email });
-    } catch (e) {
-        res.status(500).json({ "errors": "Erreur interne" });
-    }
-
-};
-
 exports.updateUsername = async (req, res) => {
     const { username, userID } = req.body;
     const errors = validationResult(req);
@@ -172,18 +155,18 @@ exports.updateUsername = async (req, res) => {
         if (!errors.isEmpty()) {
             return res.status(422).json({ "errors": errors.array() });
         }
-        
+
         const user = await User.updateOne({ "_id": userID }, { "username": username });
-        
+
         if (!user.n) {
             return res.status(404).json({ "errors": "Pseudo introuvable" });
         }
         if (!user.nModified) {
             return res.status(400).json({ "errors": "Ce pseudo est déjà le vôtre ! " });
         }
-        
+
         const currentUser = await User.findOne({ "_id": userID });
-        
+
         currentUser.password = undefined;
         return res.status(200).json({ "message": `Votre pseudo a bien été modifié. Vous répondrez désormais sous le nom de ${username}`, "userData": currentUser });
     } catch (e) {
@@ -247,7 +230,7 @@ exports.updateEmail = async (req, res) => {
                 res.status(200).json({ "message": "Un email vous a été envoyé sur votre ancienne addresse pour confirmation." });
             }
         });
-    } catch(e) {
+    } catch (e) {
         console.log(e);
         res.status(500).json({ "errors": "Une erreur est survenue." });
     }
@@ -260,7 +243,7 @@ exports.newEmail = async (req, res) => {
     const oldEmail = emailsArray[0].trim();
     const newEmail = emailsArray[1].trim();
     const userIDorigin = emailsArray[2].trim();
-    
+
     console.log("emails décryptés", oldEmail, newEmail, userIDorigin);
     try {
 
