@@ -100,8 +100,8 @@ exports.login = async (req, res) => {
             "email": user.email,
             "username": user.username,
             "userID": user._id,
-            token,
-            "message": "Vous êtes désormais connectés"
+            "mytheme": user.mytheme,
+            token
         });
 
     } catch (err) {
@@ -426,5 +426,26 @@ exports.newPassword = async (req, res) => {
     } catch (e) {
         console.log(e);
         return res.status(401).json({ "errors": "Identité non vérifiée" });
+    }
+};
+
+exports.updateTheme = async (req, res, next) => {
+    const { theme, userID } = req.body;
+    const token = req.headers.authorization.split(" ")[1];
+
+    try {
+        await User.updateOne({ "_id": userID }, { "mytheme": theme });
+
+        const userdata = await User.findOne({ "_id": userID });
+
+        return res.status(200).json({
+            "userID": userdata._id,
+            "username": userdata.username,
+            "email": userdata.email,
+            "mytheme": userdata.mytheme,
+            token
+        });
+    } catch (err) {
+        return res.status(500).json({ err, "errors": "Erreur interne" });
     }
 };
