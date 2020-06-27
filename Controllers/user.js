@@ -53,7 +53,8 @@ exports.signup = async (req, res) => {
             const newUser = new User({
                 email,
                 username,
-                "password": hash
+                "password": hash,
+                "mytheme": { "color": "#6e00c8", "title": "Violet", "hovered": "#5d00a9" }
             });
 
             newUser.save()
