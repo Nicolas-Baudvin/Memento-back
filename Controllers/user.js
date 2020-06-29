@@ -102,6 +102,7 @@ exports.login = async (req, res) => {
             "username": user.username,
             "userID": user._id,
             "mytheme": user.mytheme,
+            "message": "Vous êtes bien connectés !",
             token
         });
 
