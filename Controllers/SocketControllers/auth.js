@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const User = require("../../Models/user");
 
 exports.identify = async (userData, socket) => {
 
@@ -12,6 +13,7 @@ exports.identify = async (userData, socket) => {
             socket.leaveAll();
             return socket.disconnect();
         }
+        User.updateOne({ "_id": userID }, { "socketID": socket.id });
         return socket.emit("success identify");
     } catch (e) {
         console.log(e);

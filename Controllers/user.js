@@ -451,3 +451,22 @@ exports.updateTheme = async (req, res, next) => {
         return res.status(500).json({ err, "errors": "Erreur interne" });
     }
 };
+
+exports.findUsers = async (req, res) => {
+    const { userID, friendName } = req.body;
+
+    try {
+        const users = await User.find();
+        const sortedUsers = users.filter((user) => user.username.toLowerCase().includes(friendName));
+        console.log(sortedUsers);
+
+        if (!sortedUsers || sortedUsers.length === 0) {
+            return res.status(200).json({ "users": [] });
+        }
+
+        return res.status(200).json({ "users": sortedUsers });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({ e, "err": "Erreur interne, contactez un administrateur" });
+    }
+};
