@@ -458,7 +458,6 @@ exports.findUsers = async (req, res) => {
     try {
         const users = await User.find();
         const sortedUsers = users.filter((user) => user.username.toLowerCase().includes(friendName));
-        console.log(sortedUsers);
 
         if (!sortedUsers || sortedUsers.length === 0) {
             return res.status(200).json({ "users": [] });

@@ -13,12 +13,11 @@ exports.identify = async (userData, socket) => {
             socket.leaveAll();
             return socket.disconnect();
         }
-        User.updateOne({ "_id": userID }, { "socketID": socket.id });
+        await User.updateOne({ "_id": userID }, { "socketID": socket.id });
         return socket.emit("success identify");
     } catch (e) {
         console.log(e);
         socket.emit("fail_identify", e);
         throw new Error(e);
     }
-
 };

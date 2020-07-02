@@ -57,6 +57,8 @@ server.listen(port);
 const io = require("socket.io")(server);
 const SocketAuthCtrl = require("./Controllers/SocketControllers/auth");
 const SocketTabCtrl = require("./Controllers/SocketControllers/tab");
+const SocketInvitationCtl = require("./Controllers/SocketControllers/invitation");
+const User = require("./Models/user");
 
 const roomCreated = {};
 
@@ -67,9 +69,11 @@ io.on("connection", (socket) => {
 
     socket.on("new_tab", (data) => SocketTabCtrl.createTab(data, io, socket, roomCreated));
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
         const keys = Object.keys(socket.adapter.rooms);
         const rooms = Object.keys(roomCreated);
+
+        await User.updateOne({ "socketID": socket.id }, { "socketID": "" });
 
         rooms.forEach((room) => {
 
@@ -97,8 +101,8 @@ io.on("connection", (socket) => {
 
     socket.on("leave room", (room) => SocketTabCtrl.leaveRoom(room, io, socket, roomCreated));
 
-    socket.on("end", () => {
-        socket.disconnect();
+    socket.on("end", (link) => {
+        socket.leave(link);
     });
 
     socket.on("send lists", (lists) => SocketTabCtrl.sendLists(lists, io, socket, roomCreated));
@@ -112,4 +116,7 @@ io.on("connection", (socket) => {
     socket.on("send message", (message) => SocketTabCtrl.sendMessage(message, io, socket));
 
     socket.on("change user role", (data) => SocketTabCtrl.changeUserRole(data, io, socket, roomCreated));
+
+    socket.on("send invitation", (data) => SocketInvitationCtl.sendInvite(data, io, socket));
+    socket.on("decline invitation", (data) => SocketInvitationCtl.decline(data, io, socket));
 });
