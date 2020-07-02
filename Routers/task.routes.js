@@ -5,7 +5,7 @@ const authMw = require("../Middlewares/auth");
 
 const router = express.Router();
 
-router.post("/find/", authMw, taskCtrl.find);
+router.post("/find/", taskCtrl.find);
 router.post("/create/", [checker.create, authMw], taskCtrl.create);
 router.patch("/update-name/", [checker.updateName, authMw], taskCtrl.updateName);
 router.patch("/update-label/", [checker.updateLabel, authMw], taskCtrl.updateLabel);
