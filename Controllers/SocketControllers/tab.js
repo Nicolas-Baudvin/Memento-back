@@ -87,7 +87,7 @@ exports.joinTab = async (data, io, socket, roomCreated) => {
 
     socket.emit("tab joined", { "socket": roomCreated[link], "tabData": tab, "lists": cryptedLists, "tasks": cryptedTasks });
 
-    io.to(link).emit("user joined room", { "message": `${userData.username} a rejoint votre tableau !`, "userData": { ...userData, "socketId": socket.id }, "currentSocket": roomCreated[link] });
+    io.to(link).emit("user joined room", { "message": `${userData.username} a rejoint le tableau !`, "userData": { ...userData, "socketId": socket.id }, "currentSocket": roomCreated[link] });
 };
 
 exports.leaveRoom = (room, io, socket, roomCreated) => {
