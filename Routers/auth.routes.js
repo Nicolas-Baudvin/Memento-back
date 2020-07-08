@@ -16,6 +16,6 @@ router.post("/forgot-password/", [checker.forgotPassword], authCtrl.forgotPasswo
 router.patch("/new-email/", authMw, authCtrl.newEmail);
 router.patch("/new-password/", [checker.newPassword], authCtrl.newPassword); // nouveau mot de passe après oubli
 router.patch("/change-theme/", authMw, authCtrl.updateTheme);
-router.post("/find-friend/", authMw, authCtrl.findUsers);
+router.post("/user/find", authMw, authCtrl.findUsers);
 
 module.exports = router;

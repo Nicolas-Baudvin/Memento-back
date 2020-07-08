@@ -464,6 +464,9 @@ exports.findUsers = async (req, res) => {
             return res.status(200).json({ "users": [] });
         }
 
+        delete sortedUsers.password;
+        delete sortedUsers.token;
+
         return res.status(200).json({ "users": sortedUsers });
     } catch (e) {
         console.log(e);
