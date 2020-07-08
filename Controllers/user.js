@@ -464,10 +464,13 @@ exports.findUsers = async (req, res) => {
             return res.status(200).json({ "users": [] });
         }
 
-        delete sortedUsers.password;
-        delete sortedUsers.token;
+        const result = sortedUsers.map((user) => {
+            user.password = undefined;
+            user.token = undefined;
+            return user;
+        });
 
-        return res.status(200).json({ "users": sortedUsers });
+        return res.status(200).json({ "users": result });
     } catch (e) {
         console.log(e);
         return res.status(500).json({ e, "err": "Erreur interne, contactez un administrateur" });
