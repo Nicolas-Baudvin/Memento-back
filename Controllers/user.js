@@ -2,7 +2,7 @@
 /* eslint-disable quotes */
 const bcrypt = require("bcrypt"),
     jwt = require("jsonwebtoken"),
-    { encodeString, decodeString } = require("../Utils/crypt"),
+    { encodeString, decodeString, cryptUserData } = require("../Utils/crypt"),
     mailer = require("nodemailer"),
     { validationResult } = require("express-validator");
 
@@ -464,13 +464,16 @@ exports.findUsers = async (req, res) => {
             return res.status(200).json({ "users": [] });
         }
 
-        const result = sortedUsers.map((user) => {
+        const result = sortedUsers.filter((user) => {
             user.password = undefined;
             user.token = undefined;
-            return user;
+            user.notifs = undefined;
+            return user._id != userID;
         });
 
-        return res.status(200).json({ "users": result });
+        const cryptedResult = await cryptUserData(result);
+
+        return res.status(200).json({ "users": cryptedResult.cryptedData });
     } catch (e) {
         console.log(e);
         return res.status(500).json({ e, "err": "Erreur interne, contactez un administrateur" });
