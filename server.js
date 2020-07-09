@@ -76,7 +76,6 @@ io.on("connection", (socket) => {
         await User.updateOne({ "socketID": socket.id }, { "socketID": "" });
 
         rooms.forEach((room) => {
-
             roomCreated[room].guests = roomCreated[room].guests.map((guest) => {
                 if (guest.userData.socketId === socket.id) {
                     guest.isOnline = false;
@@ -118,5 +117,23 @@ io.on("connection", (socket) => {
     socket.on("change user role", (data) => SocketTabCtrl.changeUserRole(data, io, socket, roomCreated));
 
     socket.on("send invitation", (data) => SocketInvitationCtl.sendInvite(data, io, socket));
+
     socket.on("decline invitation", (data) => SocketInvitationCtl.decline(data, io, socket));
+
+    socket.on("invitation to be friend", async (data) => {
+        const { to, from } = data;
+
+        from.socketID = socket.id;
+
+        if (to.socketID) {
+            io.to(to.socketID).emit("invitation to be friend", ({ "from": from, "message": `${from.username} souhaite devenir votre ami` }));
+        } else {
+            const user = await User.findOne({ "_id": to.from._id });
+
+            await User.updateOne(
+                { "_id": to.from._id },
+                { "notifs": [...user.notifs, { "from": from, "message": `${from.username} souhaite devenir votre ami` }] }
+            );
+        }
+    });
 });
