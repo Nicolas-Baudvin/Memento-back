@@ -1,8 +1,9 @@
 const jwt = require("jsonwebtoken");
 const User = require("../../Models/user");
 const Notifs = require("../../Models/notifs");
+const Friends = require("../../Models/friends");
 
-exports.identify = async (userData, socket) => {
+exports.identify = async (userData, socket, io) => {
 
     const { token, userID } = userData;
 
@@ -15,9 +16,35 @@ exports.identify = async (userData, socket) => {
             return socket.disconnect();
         }
         await User.updateOne({ "_id": userID }, { "socketID": socket.id });
-        const notifs = await Notifs.find({ userID });
+        const user = await User.findOne({ "socketID": socket.id });
+        const userFriends = await Friends.findOne({ "userID": user._id });
 
-        return socket.emit("success identify", notifs);
+        if (userFriends) {
+            userFriends.list.forEach(async (userFriend) => {
+                const friend = await User.findOne({ "username": userFriend.username });
+                const friendsOfFriend = await Friends.findOne({ "userID": friend._id });
+
+                const newList = friendsOfFriend.list.map((elem) => {
+                    if (elem.username === user.username) {
+                        elem.socketID = socket.id;
+                        elem.isOnline = true;
+                    }
+                    return elem;
+                });
+
+                await Friends.updateOne({ "userID": friend._id }, { "list": newList });
+                const friendsUpdated = await Friends.findOne({ "userID": friend._id });
+
+                if (friend.socketID) {
+                    io.to(friend.socketID).emit("update friend list", friendsUpdated.list);
+                }
+            });
+        }
+        const notifs = await Notifs.find({ userID });
+        const friends = await Friends.findOne({ userID });
+
+
+        return socket.emit("success identify", { notifs, "friends": friends ? friends.list : [] });
     } catch (e) {
         console.log(e);
         socket.emit("fail_identify", e);
