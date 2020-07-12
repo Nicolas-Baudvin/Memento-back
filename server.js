@@ -130,6 +130,10 @@ io.on("connection", (socket) => {
     socket.on("end", (link) => {
         socket.leave(link);
     });
+    
+    socket.on("off", () => {
+        socket.disconnect();
+    });
 
     socket.on("send lists", (lists) => SocketTabCtrl.sendLists(lists, io, socket, roomCreated));
 
