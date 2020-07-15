@@ -28,18 +28,24 @@ exports.sendFriendInvite = async (data, io, socket) => {
     if (to.socketID) {
         io.to(to.socketID).emit("invitation to be friend", ({ "from": from, "message": `${from.username} souhaite devenir votre ami` }));
     } else {
-        const newNotif = new Notifs({
-            "title": `${from.username} souhaite devenir votre ami`,
-            "from": from.username,
-            "userID": to._id
-        });
+        const isAlreadySent = await Notifs.findOne({ "from": from.username });
 
-        await newNotif.save();
+        if (!isAlreadySent) {
+            const newNotif = new Notifs({
+                "title": `${from.username} souhaite devenir votre ami`,
+                "from": from.username,
+                "userID": to._id
+            });
+
+            await newNotif.save();
+        } else {
+            io.to(socket.id).emit("err", { "msg": "Vous avez déjà envoyé cette demande" });
+        }
     }
 };
 
 exports.acceptInvitation = async (data, io) => {
-    const { owner, isFromNotif, userID } = data;
+    const { owner, userID } = data;
 
     try {
         const recipient = await User.findOne({ "_id": userID });
@@ -91,10 +97,6 @@ exports.acceptInvitation = async (data, io) => {
                     { "transmitter": recipient.username, "message": `Vous êtes déjà amis avec ${recipient.username}` }
                 );
             }
-        }
-
-        if (isFromNotif) {
-            await Notifs.deleteMany({ "title": `${transmitter.username} souhaite devenir votre ami` });
         }
         const tFriends = await Friends.findOne({ "userID": transmitter._id });
         const rFriends = await Friends.findOne({ "userID": recipient._id });
