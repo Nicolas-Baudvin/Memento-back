@@ -468,6 +468,7 @@ exports.findUsers = async (req, res) => {
             user.password = undefined;
             user.token = undefined;
             user.notifs = undefined;
+            user.email = undefined;
             return user._id != userID;
         });
 
