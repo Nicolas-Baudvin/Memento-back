@@ -60,6 +60,7 @@ const SocketTabCtrl = require("./Controllers/SocketControllers/tab");
 const SocketInvitationCtl = require("./Controllers/SocketControllers/invitation");
 const User = require("./Models/user");
 const Friends = require("./Models/friends");
+const Notifs = require("./Models/notifs");
 
 
 const roomCreated = {};
@@ -130,7 +131,7 @@ io.on("connection", (socket) => {
     socket.on("end", (link) => {
         socket.leave(link);
     });
-    
+
     socket.on("off", () => {
         socket.disconnect();
     });
@@ -154,4 +155,49 @@ io.on("connection", (socket) => {
     socket.on("invitation to be friend", async (data) => SocketInvitationCtl.sendFriendInvite(data, io, socket));
 
     socket.on("accept friend invitation", async (data) => SocketInvitationCtl.acceptInvitation(data, io, socket));
+
+    socket.on("delete friend", async (data) => {
+        const { username } = data.friend;
+        const { userID } = data;
+
+        try {
+            const friend = await User.findOne({ username });
+            const user = await User.findOne({ "_id": userID });
+
+            const userFriend = await Friends.findOne({ userID });
+            const friendsOfUserFriend = await Friends.findOne({ "userID": friend._id });
+
+            const newFriendsArray = userFriend.list.filter((dude) => dude.username !== username);
+            const newFriendsOfFriendsArray = friendsOfUserFriend.list.filter((dude) => dude.username !== user.username);
+
+            await Friends.updateOne({ userID }, { "list": newFriendsArray });
+            await Friends.updateOne({ "userID": friend._id }, { "list": newFriendsOfFriendsArray });
+
+            const friendsUpdated = await Friends.findOne({ userID });
+            const friendsOfUserFriendUpdated = await Friends.findOne({ "userID": friend._id });
+
+            if (friend.socketID) {
+                io.to(friend.socketID).emit("update friend list", friendsOfUserFriendUpdated.list);
+            }
+            return io.to(socket.id).emit("update friend list", friendsUpdated.list);
+        } catch (err) {
+            io.to(socket.id).emit("err", { err, "msg": "Une erreur est survenue dans nos systèmes, réessayez encore." });
+        }
+
+
+
+    });
+
+    socket.on("delete notif", async (data) => {
+        const { notif, userID } = data;
+
+        try {
+            await Notifs.deleteOne({ "_id": notif._id });
+            const notifs = await Notifs.find({ userID });
+
+            io.to(socket.id).emit("update notifs", notifs);
+        } catch (err) {
+            io.to(socket.id).emit("err", { err, "msg": "Une erreur interne est survenue, Réessayez plus tard." });
+        }
+    });
 });
