@@ -34,19 +34,23 @@ exports.sendFriendInvite = async (data, io, socket) => {
             const newNotif = new Notifs({
                 "title": `${from.username} souhaite devenir votre ami`,
                 "from": from.username,
-                "userID": to._id
+                "userID": to._id,
+                "isActionNotif": true
             });
 
             await newNotif.save();
         } else {
-            io.to(socket.id).emit("err", { "msg": "Vous avez déjà envoyé cette demande" });
+            return io.to(socket.id).emit("err", { "msg": "Vous avez déjà envoyé cette demande" });
         }
     }
+
+    io.to(socket.id).emit("confirm invitation sent", `Confirmation de l'envoie de l'invitation à ${to.username}`);
 };
 
 exports.acceptInvitation = async (data, io) => {
-    const { owner, userID } = data;
+    const { owner, userID, notifId, isFromNotif } = data;
 
+     // TODO: refacto
     try {
         const recipient = await User.findOne({ "_id": userID });
         const transmitter = await User.findOne({ "username": owner });
@@ -101,13 +105,21 @@ exports.acceptInvitation = async (data, io) => {
         const tFriends = await Friends.findOne({ "userID": transmitter._id });
         const rFriends = await Friends.findOne({ "userID": recipient._id });
 
+        let notifs;
+
+        if (notifId) {
+            await Notifs.deleteOne({ "_id": notifId });
+            notifs = await Notifs.find({ userID });
+        }
+
         io.to(transmitter.socketID).emit("accept friend invitation", {
             "msg": `${recipient.username} a accepté votre invitation, vous êtes désormais amis !`,
             "friends": tFriends.list
         });
         io.to(recipient.socketID).emit("confirm accept invitation", {
             "msg": `vous êtes désormais amis avec ${transmitter.username} !`,
-            "friends": rFriends.list
+            "friends": rFriends.list,
+            "notifs": isFromNotif ? notifs : null
         });
     } catch (e) {
         console.log(e);
