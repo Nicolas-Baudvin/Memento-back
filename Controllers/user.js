@@ -457,18 +457,17 @@ exports.findUsers = async (req, res) => {
     const { userID, friendName } = req.body;
 
     try {
-        const users = await User.find();
-        const sortedUsers = users.filter((user) => user.username.toLowerCase().includes(friendName));
+        const regex = new RegExp(friendName, "i");
+
+        const users = await User.find({ "username": regex }, "username _id", { "limit": 10 }).exec();
+        
+        const sortedUsers = users;
 
         if (!sortedUsers || sortedUsers.length === 0) {
             return res.status(200).json({ "users": [] });
         }
 
         const result = sortedUsers.filter((user) => {
-            user.password = undefined;
-            user.token = undefined;
-            user.notifs = undefined;
-            user.email = undefined;
             return user._id != userID;
         });
 
